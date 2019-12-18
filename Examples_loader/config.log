@@ -112,7 +112,7 @@ configure:2940: $? = 0
 configure:2962: result: 
 configure:2984: checking whether we are cross compiling
 configure:2992: arm-none-eabi-gcc -o conftest   -nostdlib -Wl,--entry=0 conftest.c  >&5
-/tmp/ccmmhotw.o: In function `main':
+/tmp/ccI6zkEK.o: In function `main':
 conftest.c:(.text+0x14): undefined reference to `fopen'
 conftest.c:(.text+0x3c): undefined reference to `fclose'
 collect2: error: ld returned 1 exit status
@@ -174,6 +174,7 @@ on chemberlein-Lenovo-IdeaPad-Yoga-13
 
 config.status:850: creating Makefile
 config.status:850: creating config.h
+config.status:1031: config.h is unchanged
 config.status:1079: executing depfiles commands
 
 ## ---------------- ##
@@ -220,7 +221,7 @@ ax_cv_check_cflags__Werror__no_pie=yes
 ## Output variables. ##
 ## ----------------- ##
 
-ACLOCAL='${SHELL} /home/chemberlein/develop/elf_linker-1.0/build-aux/missing aclocal-1.16'
+ACLOCAL='${SHELL} /home/chemberlein/develop/prog5pro/build-aux/missing aclocal-1.16'
 AMDEPBACKSLASH='\'
 AMDEP_FALSE='#'
 AMDEP_TRUE=''
@@ -229,9 +230,9 @@ AM_BACKSLASH='\'
 AM_DEFAULT_V='$(AM_DEFAULT_VERBOSITY)'
 AM_DEFAULT_VERBOSITY='1'
 AM_V='$(V)'
-AUTOCONF='${SHELL} /home/chemberlein/develop/elf_linker-1.0/build-aux/missing autoconf'
-AUTOHEADER='${SHELL} /home/chemberlein/develop/elf_linker-1.0/build-aux/missing autoheader'
-AUTOMAKE='${SHELL} /home/chemberlein/develop/elf_linker-1.0/build-aux/missing automake-1.16'
+AUTOCONF='${SHELL} /home/chemberlein/develop/prog5pro/build-aux/missing autoconf'
+AUTOHEADER='${SHELL} /home/chemberlein/develop/prog5pro/build-aux/missing autoheader'
+AUTOMAKE='${SHELL} /home/chemberlein/develop/prog5pro/build-aux/missing automake-1.16'
 AWK='mawk'
 CC='arm-none-eabi-gcc'
 CCAS='arm-none-eabi-gcc'
@@ -259,7 +260,7 @@ LDFLAGS=''
 LIBOBJS=''
 LIBS=''
 LTLIBOBJS=''
-MAKEINFO='${SHELL} /home/chemberlein/develop/elf_linker-1.0/build-aux/missing makeinfo'
+MAKEINFO='${SHELL} /home/chemberlein/develop/prog5pro/build-aux/missing makeinfo'
 MKDIR_P='/bin/mkdir -p'
 OBJEXT='o'
 PACKAGE='arm-examples'
@@ -301,7 +302,7 @@ host_alias='arm-none-eabi'
 htmldir='${docdir}'
 includedir='${prefix}/include'
 infodir='${datarootdir}/info'
-install_sh='${SHELL} /home/chemberlein/develop/elf_linker-1.0/build-aux/install-sh'
+install_sh='${SHELL} /home/chemberlein/develop/prog5pro/build-aux/install-sh'
 libdir='${exec_prefix}/lib'
 libexecdir='${exec_prefix}/libexec'
 localedir='${datarootdir}/locale'

@@ -1,67 +1,56 @@
 #include <elf.h>
 #include <stdio.h>
 #include <string.h>
-uint16_t swap_uint16(uint16_t x) {
-    return (x << 8) | (x >> 8 );
-}
-uint32_t swap_uint32( uint32_t val )
-{
-    val = ((val << 8) & 0xFF00FF00 ) | ((val >> 8) & 0xFF00FF ); 
-    return (val << 16) | (val >> 16);
-}
-uint64_t swap_uint64( uint64_t val )
-{
-    val = ((val << 8) & 0xFF00FF00FF00FF00ULL ) | ((val >> 8) & 0x00FF00FF00FF00FFULL );
-    val = ((val << 16) & 0xFFFF0000FFFF0000ULL ) | ((val >> 16) & 0x0000FFFF0000FFFFULL );
-    return (val << 32) | (val >> 32);
-}
+#include <byteswap.h>
+
+
 int main(int argc, char const *argv[]){
-  	FILE* file = fopen(argv[1], "rb");
-  	unsigned char e_ident[EI_NIDENT];
-  	fread(&e_ident, 1, sizeof(e_ident), file);
-  	int i=0;
-  	printf("En-tête ELF:\n");
-  	printf("            Magique:                                         ");
-  	while(i<EI_NIDENT){
-  		printf("%02x ",e_ident[i]);
-  		i++;
-  	}
-  	printf("\n");
-  	printf("            Classe:                                          ");
-  	switch(e_ident[EI_CLASS]){
-  		case ELFCLASSNONE:
-  			printf("This class is invalid\n");
-  		break;
-  		case ELFCLASS32:
-  			printf("ELF32\n");
-  		break;
-  		case ELFCLASS64:
-  			printf("ELF64\n");
-  		break;
-  	}
-  	printf("            Données:                                         ");
-  	switch(e_ident[EI_DATA]){
-  		case ELFDATANONE:
-  			printf("Unknown data format\n");
-  		break;
-  		case ELFDATA2LSB:
-  			printf("complément à 2, ????????????????????????????????????? (little endian)\n");
-  		break;
-  		case ELFDATA2MSB:
-  			printf("complément à 2, système à octets de poids fort d'abord (big endian)\n");
-  		break;
-  	}
-  	printf("            Version:                                         ");
-  	switch(e_ident[EI_VERSION]){
-  		case ELFDATANONE:
-  			printf("0 (Version invalide) \n");
-  		break;
-  		case ELFDATA2LSB:
-  			printf("1 (current)\n");
-  		break;
-  	}
-  	printf("            OS/ABI:                                          ");
-  	switch(e_ident[EI_OSABI]){ 		
+    FILE* file = fopen(argv[1], "rb");
+    unsigned char e_ident[EI_NIDENT];
+    fread(&e_ident, 1, sizeof(e_ident), file);
+    int i=0;
+    printf("En-tête ELF:\n");
+    printf("            Magique:                                         ");
+    while(i<EI_NIDENT){
+      printf("%02x ",e_ident[i]);
+      i++;
+    }
+    printf("\n");
+    printf("            Classe:                                          ");
+    switch(e_ident[EI_CLASS]){
+      case ELFCLASSNONE:
+        printf("This class is invalid\n");
+      break;
+      case ELFCLASS32:
+        printf("ELF32\n");
+      break;
+      case ELFCLASS64:
+        printf("ELF64\n");
+      break;
+    }
+    printf("            Données:                                         ");
+    switch(e_ident[EI_DATA]){
+      case ELFDATANONE:
+        printf("Unknown data format\n");
+      break;
+      case ELFDATA2LSB:
+        printf("complément à 2, ????????????????????????????????????? (little endian)\n");
+      break;
+      case ELFDATA2MSB:
+        printf("complément à 2, système à octets de poids fort d'abord (big endian)\n");
+      break;
+    }
+    printf("            Version:                                         ");
+    switch(e_ident[EI_VERSION]){
+      case ELFDATANONE:
+        printf("0 (Version invalide) \n");
+      break;
+      case ELFDATA2LSB:
+        printf("1 (current)\n");
+      break;
+    }
+    printf("            OS/ABI:                                          ");
+    switch(e_ident[EI_OSABI]){    
         case ELFOSABI_SYSV:
             printf("ABI d'UNIX System V\n");
         break;
@@ -92,15 +81,15 @@ int main(int argc, char const *argv[]){
         case ELFOSABI_STANDALONE:
             printf("ABI autonome (intégrée)\n");
         break;
-  	}
-  	printf("            Version ABI:                                     ");
-	printf("%d\n",e_ident[EI_ABIVERSION]);
-	printf("            Type:                                            ");
-	uint16_t e_type;
-  	fread(&e_type, 1, sizeof(e_type), file);
-  	if (e_ident[EI_DATA]!=ELFDATA2LSB){
-      	e_type =swap_uint16(e_type);
-  	}
+    }
+    printf("            Version ABI:                                     ");
+  printf("%d\n",e_ident[EI_ABIVERSION]);
+  printf("            Type:                                            ");
+  uint16_t e_type;
+    fread(&e_type, 1, sizeof(e_type), file);
+    if (e_ident[EI_DATA]!=ELFDATA2LSB){
+        e_type =__bswap_16(e_type);
+    }
     switch (e_type){
         case ET_NONE:
             printf("An unknown type\n");
@@ -122,14 +111,14 @@ int main(int argc, char const *argv[]){
             break;
         case ET_HIPROC:
             printf("HIPROC Processor-specific\n");
-           	break;
+            break;
           }
-  	printf("            Machine:                                         ");
-  	uint16_t e_machine;
-  	fread(&e_machine, 1, sizeof(e_machine), file);
-  	if (e_ident[EI_DATA]!=ELFDATA2LSB){
-      	e_machine=swap_uint16(e_machine);
-  	}
+    printf("            Machine:                                         ");
+    uint16_t e_machine;
+    fread(&e_machine, 1, sizeof(e_machine), file);
+    if (e_ident[EI_DATA]!=ELFDATA2LSB){
+        e_machine=__bswap_16(e_machine);
+    }
     switch (e_machine){
             case EM_NONE:
                 printf("NONE  An unknown machine\n");
@@ -189,59 +178,59 @@ int main(int argc, char const *argv[]){
                 printf("VAX DEC Vax  \n");
                 break;
           } 
-  	printf("            Version:                                         ");
-  	uint32_t e_version;
-  	fread(&e_version, 1, sizeof(e_version), file);
-	if (e_ident[EI_DATA]!=ELFDATA2LSB){
-    	e_version =swap_uint32(e_version);
-  	}
-    printf("0x%lx\n",e_type);
+    printf("            Version:                                         ");
+    uint32_t e_version;
+    fread(&e_version, 1, sizeof(e_version), file);
+   if (e_ident[EI_DATA]!=ELFDATA2LSB){
+      e_version =__bswap_32(e_version);
+    }
+    printf("0x%lx\n",e_version);
     printf("            Adresse du point d'entrée:                       ");
-  	Elf32_Addr e_entry32;
-  	Elf64_Addr e_entry64;
-  	switch(e_ident[EI_CLASS]){
-  		case ELFCLASSNONE:
-  			printf("This class is invalid\n");
-  		break;
-  		case ELFCLASS32:
-  			fread(&e_entry32,1,sizeof(e_entry32),file);
-  			if (e_ident[EI_DATA]!=ELFDATA2LSB){
-      			e_entry32 =swap_uint32(e_entry32);
-  				}
-  			printf("0x%hx\n",e_entry32);
-  		break;
-  		case ELFCLASS64:
-  			fread(&e_entry64,1,sizeof(e_entry64),file);
-  			if (e_ident[EI_DATA]!=ELFDATA2LSB){
-      			e_entry64 =swap_uint64(e_entry64);
-  				}
-  			printf("0x%hx\n",e_entry64);
-  		break;
-  	}
+    Elf32_Addr e_entry32;
+    Elf64_Addr e_entry64;
+    switch(e_ident[EI_CLASS]){
+      case ELFCLASSNONE:
+        printf("This class is invalid\n");
+      break;
+      case ELFCLASS32:
+        fread(&e_entry32,1,sizeof(e_entry32),file);
+        if (e_ident[EI_DATA]!=ELFDATA2LSB){
+            e_entry32 =__bswap_32(e_entry32);
+          }
+        printf("0x%hx\n",e_entry32);
+      break;
+      case ELFCLASS64:
+        fread(&e_entry64,1,sizeof(e_entry64),file);
+        if (e_ident[EI_DATA]!=ELFDATA2LSB){
+            e_entry64 =__bswap_64(e_entry64);
+          }
+        printf("0x%hx\n",e_entry64);
+      break;
+    }
     printf("            Début des en-têtes de programme:                 ");
-  	Elf32_Off e_phoff32;
-  	Elf64_Off e_phoff64;
-  	switch(e_ident[EI_CLASS]){
-  		case ELFCLASSNONE:
-  			printf("This class is invalid\n");
-  		break;
-  		case ELFCLASS32:
-  			fread(&e_phoff32,1,sizeof(e_phoff32),file);
-  			if (e_ident[EI_DATA]!=ELFDATA2LSB){
-      			e_phoff32 =swap_uint32(e_phoff32);
-  				}
-  			printf("%d",e_phoff32);
-  		break;
-  		case ELFCLASS64:
-  			fread(&e_phoff64,1,sizeof(e_phoff64),file);
-  			if (e_ident[EI_DATA]!=ELFDATA2LSB){
-      			e_phoff64 =swap_uint64(e_phoff64);
-  				}
-  			printf("%d",e_phoff64);
-  		break;
-  	}
-  	printf (" (bytes into file)\n");
-  	printf("            Début des en-têtes de section:                   ");
+    Elf32_Off e_phoff32;
+    Elf64_Off e_phoff64;
+    switch(e_ident[EI_CLASS]){
+      case ELFCLASSNONE:
+        printf("This class is invalid\n");
+      break;
+      case ELFCLASS32:
+        fread(&e_phoff32,1,sizeof(e_phoff32),file);
+        if (e_ident[EI_DATA]!=ELFDATA2LSB){
+            e_phoff32 =__bswap_32(e_phoff32);
+          }
+        printf("%d",e_phoff32);
+      break;
+      case ELFCLASS64:
+        fread(&e_phoff64,1,sizeof(e_phoff64),file);
+        if (e_ident[EI_DATA]!=ELFDATA2LSB){
+            e_phoff64 =__bswap_64(e_phoff64);
+          }
+        printf("%d",e_phoff64);
+      break;
+    }
+    printf (" (bytes into file)\n");
+    printf("            Début des en-têtes de section:                   ");
     Elf32_Off e_shoff32;
     Elf64_Off e_shoff64;
     switch(e_ident[EI_CLASS]){
@@ -251,68 +240,67 @@ int main(int argc, char const *argv[]){
         case ELFCLASS32:
             fread(&e_shoff32,1,sizeof(e_shoff32),file);
             if (e_ident[EI_DATA]!=ELFDATA2LSB){
-                e_shoff32 =swap_uint32(e_shoff32);
+                e_shoff32 =__bswap_32(e_shoff32);
                 }
             printf("%d",e_shoff32);
         break;
         case ELFCLASS64:
             fread(&e_shoff64,1,sizeof(e_shoff64),file);
             if (e_ident[EI_DATA]!=ELFDATA2LSB){
-                e_shoff64 =swap_uint64(e_shoff64);
+                e_shoff64 =__bswap_64(e_shoff64);
                 }
             printf("%d",e_shoff64);
         break;
     }
-  	printf (" (bytes into file)\n");
-  	printf("            Fanions:                                         ");
-  	uint32_t e_flags;
-  	fread(&e_flags, 1, sizeof(e_flags), file);
-	if (e_ident[EI_DATA]!=ELFDATA2LSB){
-    	e_flags =swap_uint32(e_flags);
-  	}
+    printf (" (bytes into file)\n");
+    printf("            Fanions:                                         ");
+    uint32_t e_flags;
+    fread(&e_flags, 1, sizeof(e_flags), file);
+  if (e_ident[EI_DATA]!=ELFDATA2LSB){
+      e_flags =__bswap_32(e_flags);
+    }
     printf("0x%lx\n",e_flags);
-  	printf("            Taille de cet en-tête:                           ");
-  	uint16_t e_ehsize;
-  	fread(&e_ehsize, 1, sizeof(e_ehsize), file);
-  	if (e_ident[EI_DATA]!=ELFDATA2LSB){
-      	e_ehsize=swap_uint16(e_ehsize);
-  	}
-  	printf("%u (bytes)\n",e_ehsize);
-  	printf("            Taille de l'en-tête du programme:                ");
-  	uint16_t e_phentsize;
-  	fread(&e_phentsize, 1, sizeof(e_phentsize), file);
-  	if (e_ident[EI_DATA]!=ELFDATA2LSB){
-      	e_phentsize=swap_uint16(e_phentsize);
-  	}
-  	printf("%u (bytes)\n",e_phentsize);
-  	printf("            Nombre d'en-tête du programme:                   ");
-  	uint16_t e_phnum;
-  	fread(&e_phnum, 1, sizeof(e_phnum), file);
-  	if (e_ident[EI_DATA]!=ELFDATA2LSB){
-      	e_phnum=swap_uint16(e_phnum);
-  	}
-  	printf("%u \n",e_phnum);
-  	printf("            Taille des en-têtes de section:                  ");
-  	uint16_t e_shentsize;
-  	fread(&e_shentsize, 1, sizeof(e_shentsize), file);
-  	if (e_ident[EI_DATA]!=ELFDATA2LSB){
-      	e_shentsize=swap_uint16(e_shentsize);
-  	}
-  	printf("%u (bytes)\n",e_shentsize);
-  	printf("            Nombre d'en-têtes de section:                    ");
-  	uint16_t e_shnum;
-  	fread(&e_shnum, 1, sizeof(e_shnum), file);
-  	if (e_ident[EI_DATA]!=ELFDATA2LSB){
-      	e_shnum=swap_uint16(e_shnum);
-  	}
-  	printf("%u \n",e_shnum);
-  	printf("            Table d'indexes des chaînes d'en-tête de section:");
-  	uint16_t e_shstrndx;
-  	fread(&e_shstrndx, 1, sizeof(e_shstrndx), file);
-  	if (e_ident[EI_DATA]!=ELFDATA2LSB){
-      	e_shstrndx=swap_uint16(e_shstrndx);
-  	}
-  	printf("%u \n",e_shstrndx);
-  	fclose(file);
+    printf("            Taille de cet en-tête:                           ");
+    uint16_t e_ehsize;
+    fread(&e_ehsize, 1, sizeof(e_ehsize), file);
+    if (e_ident[EI_DATA]!=ELFDATA2LSB){
+        e_ehsize=__bswap_16(e_ehsize);
+    }
+    printf("%u (bytes)\n",e_ehsize);
+    printf("            Taille de l'en-tête du programme:                ");
+    uint16_t e_phentsize;
+    fread(&e_phentsize, 1, sizeof(e_phentsize), file);
+    if (e_ident[EI_DATA]!=ELFDATA2LSB){
+        e_phentsize=__bswap_16(e_phentsize);
+    }
+    printf("%u (bytes)\n",e_phentsize);
+    printf("            Nombre d'en-tête du programme:                   ");
+    uint16_t e_phnum;
+    fread(&e_phnum, 1, sizeof(e_phnum), file);
+    if (e_ident[EI_DATA]!=ELFDATA2LSB){
+        e_phnum=__bswap_16(e_phnum);
+    }
+    printf("%u \n",e_phnum);
+    printf("            Taille des en-têtes de section:                  ");
+    uint16_t e_shentsize;
+    fread(&e_shentsize, 1, sizeof(e_shentsize), file);
+    if (e_ident[EI_DATA]!=ELFDATA2LSB){
+        e_shentsize=__bswap_16(e_shentsize);
+    }
+    printf("%u (bytes)\n",e_shentsize);
+    printf("            Nombre d'en-têtes de section:                    ");
+    uint16_t e_shnum;
+    fread(&e_shnum, 1, sizeof(e_shnum), file);
+    if (e_ident[EI_DATA]!=ELFDATA2LSB){
+        e_shnum=__bswap_16(e_shnum);
+    }
+    printf("%u \n",e_shnum);
+    printf("            Table d'indexes des chaînes d'en-tête de section:");
+    uint16_t e_shstrndx;
+    fread(&e_shstrndx, 1, sizeof(e_shstrndx), file);
+    if (e_ident[EI_DATA]!=ELFDATA2LSB){
+        e_shstrndx=__bswap_16(e_shstrndx);
+    }
+    printf("%u \n",e_shstrndx);
+    fclose(file);
 }
-
