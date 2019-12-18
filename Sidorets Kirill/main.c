@@ -1,4 +1,4 @@
-  #include <stdio.h>
+#include <stdio.h>
 #include <elf.h>
 #include <string.h>
 #include <stdlib.h>
@@ -33,17 +33,25 @@ void read_elf_header(const char* elfFile) {
 
             printf("La table de symboles < %s > contient %d entrées: \n",name,nr_valeurs);
             printf("Num: Valeur      Tail  Type     Lien   Vis         Ndx  Nom   \n");
-            char* SymNames = NULL;
             for (int j=0; j < nr_valeurs; j++){
               
-              const char* nameSym = "";
               fseek(file, __bswap_32( Shdr.sh_offset) + j *sizeof(Sym), SEEK_SET);
               fread(&Sym, 1, sizeof(Sym), file);
-              fseek(file,__bswap_32( header.e_shoff)+__bswap_16(Sym.st_shndx)*__bswap_16(header.e_shentsize), SEEK_SET);
+              
+
+              char* SymNames = NULL;
+              const char* nameSym = "";
+              fseek(file,__bswap_32( header.e_shoff)+__bswap_32(Shdr.sh_link)*__bswap_16(header.e_shentsize), SEEK_SET);
               fread(&SymShdr,1,__bswap_16(header.e_shentsize),file);
               SymNames = malloc(__bswap_32(SymShdr.sh_size));
               fseek(file,__bswap_32(SymShdr.sh_offset), SEEK_SET);
               fread(SymNames, 1, __bswap_32(SymShdr.sh_size), file);
+              
+
+
+
+
+
               printf("%-5d",j  );
               printf("0x%08x  ", __bswap_32(Sym.st_value) );
               printf("%-5d ", __bswap_32(Sym.st_size) );
@@ -85,14 +93,10 @@ void read_elf_header(const char* elfFile) {
               
      
               if (Sym.st_name){
-                                nameSym =SymNames+__bswap_32(Sym.st_name);}
+                  nameSym =SymNames+__bswap_32(Sym.st_name);}
                   printf("%s\n",nameSym);
-                             
-
-
-            }
-            free(SymNames);
-            i = __bswap_16(header.e_shnum);
+                  free(SymNames);
+                  }
 
           }
       }
