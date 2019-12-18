@@ -17,6 +17,9 @@ void initialiser_elf(Elf32_info *elf,FILE *fsource){
 	lire_table_section(elf,fsource);					//lire table section	
 }
 
+
+
+
 void lire_strtab(Elf32_info *elf,FILE *fsource){
 
 	int shoff=elf->header.e_shoff;			//section setoff
@@ -89,6 +92,10 @@ void afficher_contenu_section(Elf32_info elf,FILE* fsource){
 	int offset = elf.section[numero].sh_offset;		//dacalage de début de section[numero]
 	int size = elf.section[numero].sh_size;			//taille de section[numero]
 	int adresse = elf.section[numero].sh_addr;		//adresse de section[numero]
+	if(size==0){
+		printf("La section « %s » n'a pas de données à vidanger.\n",(char*)elf.strtable+elf.section[numero].sh_name);
+		exit(1);
+	}
 	printf("Vidange hexadécimale de la section« %s »:\n",(char*)elf.strtable+elf.section[numero].sh_name);
 	
 	fseek(fsource, offset , SEEK_SET);
@@ -123,17 +130,8 @@ void afficher_contenu_section(Elf32_info elf,FILE* fsource){
 		printf("\n");
 	}
 }	
-/*	
 
 
-
-
-for(i=0;i<N_ligne;i++){
-            printf("%x",buf[i]);
-			if(i%4==0)
-				printf(" ");
-         }
-*/
 void afficher_table_section(Elf32_info elf){
 	printf("Il y a %d en-têtes de section, débutant à l'adresse de décalage %#x\n\n:",elf.header.e_shnum,elf.header.e_shoff);
 	printf("En-têtes de section :\n");
@@ -169,19 +167,12 @@ void afficher_table_section(Elf32_info elf){
 			strcat(flag,"M");
 		if(flag_int & SHF_INFO_LINK)
 			strcat(flag,"I");
-		flag_int = flag_int & 0xf;
-		if(flag_int>=SHF_EXECINSTR){
+		if(flag_int & SHF_EXECINSTR)
 			strcat(flag,"X");
-			flag_int-=SHF_EXECINSTR;
-		}
-		if(flag_int>=SHF_ALLOC){
+		if(flag_int & SHF_ALLOC)
 			strcat(flag,"A");
-			flag_int-=SHF_ALLOC;
-		}
-		if(flag_int>=SHF_WRITE){
+		if(flag_int & SHF_WRITE)
 			strcat(flag,"W");
-			flag_int-=SHF_WRITE;
-		}
 		printf("%s\t\t",flag);	free(flag);
 		printf("%d\t",elf.section[i].sh_link);
 		printf("%d\t",elf.section[i].sh_info);
@@ -314,7 +305,6 @@ void setup_little_endian(Elf32_info *elf){
 	elf->header.e_shentsize = swap_uint16(elf->header.e_shentsize);
 	elf->header.e_shnum = swap_uint16(elf->header.e_shnum);
 	elf->header.e_shstrndx = swap_uint16(elf->header.e_shstrndx);
-	
 }
 //! Byte swap unsigned short
 uint16_t swap_uint16( uint16_t val ) 
@@ -341,6 +331,5 @@ int32_t swap_int32( int32_t val )
     val = ((val << 8) & 0xFF00FF00) | ((val >> 8) & 0xFF00FF ); 
     return (val << 16) | ((val >> 16) & 0xFFFF);
 }
-
 
 
