@@ -8,7 +8,7 @@
 
 int main(int argc, char** argv){
 
-	int opt;
+	//int opt;
 	if(argc<2){
 		printf("Nombre d'arguments incorrect \n");
 		exit(1);
@@ -23,15 +23,16 @@ int main(int argc, char** argv){
 		
 		//initialiser info_elf
 		initialiser_elf(&elf,fsource);
-		
+		/*
 		struct option longopts[] = {
 			{ "header", required_argument, NULL, 'h' },
 			{ "tableSection", required_argument, NULL, 'S' },
 			{ "contenuSection", required_argument, NULL, 'x' },
 		};
-		while ((opt = getopt_long(argc, argv, "h:S:x", longopts, NULL)) != -1){
+		*/
+		//while ((opt = getopt_long(argc, argv, "h:x:S", longopts, NULL)) != -1){
 
-			switch(opt){
+			switch(argv[2][1]){
 				case 'h':
 					//affichage de l'en_tête
 					afficher_header(elf);
@@ -43,9 +44,10 @@ int main(int argc, char** argv){
 				case 'x':
 					//affichage du contenu d'une section
 					afficher_contenu_section(elf,fsource);
+						break;
 			}
 			
-		}
+		//}
 
 
 
