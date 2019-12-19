@@ -110,9 +110,11 @@ am_ARM_runner_example_OBJECTS = $(am__objects_1) $(am__objects_2) \
 ARM_runner_example_OBJECTS = $(am_ARM_runner_example_OBJECTS)
 ARM_runner_example_LDADD = $(LDADD)
 ARM_runner_example_DEPENDENCIES =
-am__objects_3 = swap.$(OBJEXT)
+am__objects_3 = header.$(OBJEXT)
+am__objects_4 = section.$(OBJEXT)
+am__objects_5 = swap.$(OBJEXT)
 am_readelf_OBJECTS = all_elf_func.$(OBJEXT) $(am__objects_3) \
-	readelf.$(OBJEXT)
+	$(am__objects_4) $(am__objects_5) readelf.$(OBJEXT)
 readelf_OBJECTS = $(am_readelf_OBJECTS)
 readelf_LDADD = $(LDADD)
 readelf_DEPENDENCIES =
@@ -350,8 +352,10 @@ COMMON = debug.h debug.c util.h util.c
 EXTRA_DIST = filtre.pl sample_run.sh
 SIMULATOR_INTERFACE = csapp.h csapp.c scanner.h scanner.l gdb_protocol.h gdb_protocol.c arm_simulator_interface.h arm_simulator_interface.c
 ENDIAN_SWAP = swap.h swap.c
+HEADER = header.h header.c 
+SECTION = section.h section.c
 ARM_runner_example_SOURCES = $(COMMON) $(SIMULATOR_INTERFACE) ARM_runner_example.c 
-readelf_SOURCES = all_elf_func.c all_elf_func.h elf.h $(ENDIAN_SWAP) readelf.c 
+readelf_SOURCES = all_elf_func.c all_elf_func.h elf.h $(HEADER) $(SECTION) $(ENDIAN_SWAP) baseElf32.h readelf.c 
 all: all-recursive
 
 .SUFFIXES:
@@ -452,8 +456,10 @@ include ./$(DEPDIR)/arm_simulator_interface.Po
 include ./$(DEPDIR)/csapp.Po
 include ./$(DEPDIR)/debug.Po
 include ./$(DEPDIR)/gdb_protocol.Po
+include ./$(DEPDIR)/header.Po
 include ./$(DEPDIR)/readelf.Po
 include ./$(DEPDIR)/scanner.Po
+include ./$(DEPDIR)/section.Po
 include ./$(DEPDIR)/swap.Po
 include ./$(DEPDIR)/util.Po
 

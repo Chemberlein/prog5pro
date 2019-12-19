@@ -5,6 +5,7 @@
 #include <linux/types.h>
 #include <linux/elf-em.h>
 
+
 /* 32-bit ELF base types. */
 typedef __u32	Elf32_Addr;
 typedef __u16	Elf32_Half;
@@ -281,14 +282,27 @@ typedef struct elf64_phdr {
 #define SHT_HIPROC	0x7fffffff
 #define SHT_LOUSER	0x80000000
 #define SHT_HIUSER	0xffffffff
+#define SHT_ARM_ATTRIBUTES    (SHT_LOPROC + 3) /* ARM attributes section.  */
 
 /* sh_flags */
-#define SHF_WRITE		0x1
-#define SHF_ALLOC		0x2
-#define SHF_EXECINSTR		0x4
-#define SHF_RELA_LIVEPATCH	0x00100000
-#define SHF_RO_AFTER_INIT	0x00200000
-#define SHF_MASKPROC		0xf0000000
+#define SHF_WRITE             (1 << 0)        /* Writable */
+#define SHF_ALLOC             (1 << 1)        /* Occupies memory during execution */
+#define SHF_EXECINSTR             (1 << 2)        /* Executable */
+#define SHF_MERGE             (1 << 4)        /* Might be merged */
+#define SHF_STRINGS             (1 << 5)        /* Contains nul-terminated strings */
+#define SHF_INFO_LINK             (1 << 6)        /* `sh_info' contains SHT index */
+#define SHF_LINK_ORDER             (1 << 7)        /* Preserve order after combining */
+#define SHF_OS_NONCONFORMING (1 << 8)        /* Non-standard OS specific handling
+                                           required */
+#define SHF_GROUP             (1 << 9)        /* Section is member of a group.  */
+#define SHF_TLS                     (1 << 10)        /* Section hold thread-local data.  */
+#define SHF_COMPRESSED             (1 << 11)        /* Section with compressed data. */
+#define SHF_MASKOS             0x0ff00000        /* OS-specific.  */
+#define SHF_MASKPROC             0xf0000000        /* Processor-specific */
+#define SHF_ORDERED             (1 << 30)        /* Special ordering requirement
+                                           (Solaris).  */
+#define SHF_EXCLUDE             (1U << 31)        /* Section is excluded unless
+                                           referenced or allocated (Solaris).*/
 
 /* special section indexes */
 #define SHN_UNDEF	0
@@ -442,5 +456,7 @@ typedef struct elf64_note {
   Elf64_Word n_descsz;	/* Content size */
   Elf64_Word n_type;	/* Content type */
 } Elf64_Nhdr;
+
+
 
 #endif /* _UAPI_LINUX_ELF_H */

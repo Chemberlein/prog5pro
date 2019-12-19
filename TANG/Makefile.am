@@ -25,9 +25,14 @@ COMMON=debug.h debug.c util.h util.c
 EXTRA_DIST=filtre.pl
 SIMULATOR_INTERFACE=csapp.h csapp.c scanner.h scanner.l gdb_protocol.h gdb_protocol.c arm_simulator_interface.h arm_simulator_interface.c
 ENDIAN_SWAP=swap.h swap.c
+HEADER=header.h header.c 
+SECTION=section.h section.c
 
 ARM_runner_example_SOURCES=$(COMMON) $(SIMULATOR_INTERFACE) ARM_runner_example.c 
-readelf_SOURCES= all_elf_func.c all_elf_func.h elf.h $(ENDIAN_SWAP) readelf.c 
+
+readelf_SOURCES= all_elf_func.c all_elf_func.h elf.h $(HEADER) $(SECTION) $(ENDIAN_SWAP) baseElf32.h readelf.c 
+
+
 
 EXTRA_DIST+=sample_run.sh
 

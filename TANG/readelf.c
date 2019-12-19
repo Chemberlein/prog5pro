@@ -25,15 +25,21 @@ Contact: Guillaume.Huard@imag.fr
 #include <stdlib.h>
 #include "elf.h"
 #include "all_elf_func.h"
+#include "baseElf32.h"
+
+
+
 
 int main(int argc, char *argv[]){
 	int opt;
 	struct option longopts[] = {
-		{ "affichage ", required_argument, NULL, 'h' },
+		{ "affichageHeader ", no_argument, NULL, 'h' },
+		{ "affichageSection ", no_argument, NULL, 'S' },
+		{ "affichageContenuSection ", no_argument, NULL, 'x'},
 		
 	};
 	
-	Elf32_info elf;
+	Elf32_info elf;	
 	FILE *file;
 	
 	file = fopen(argv[1],"r");
@@ -41,14 +47,22 @@ int main(int argc, char *argv[]){
 		printf("Erreur, entrer un fichier elf en argument.\n");
 		exit(1);
 	}else{
-		while((opt = getopt_long(argc, argv, "h", longopts, NULL)) != -1){
+		while((opt = getopt_long(argc, argv, "hSx", longopts, NULL)) != -1){
+			initElf(&elf,file);
 			switch(opt){
-			case 'h':
-				initElf(&elf,file);
+			case 'h':				
 				//etape 1
 				afficheHeader(elf);
 				break;
+			case 'S':
+				//etape 2
+				afficheTableSection(elf,file);
+				break;
+			case 'x':
+				afficher_contenu_section(elf,file);
+				break;
 			}
+			
 
 		}
 

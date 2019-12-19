@@ -1,119 +1,33 @@
-#include <stdio.h>
 #include <string.h> 
 #include <stdlib.h>
 #include <ctype.h>
 #include <stdint.h>
 #include "all_elf_func.h"
-#include "swap.h"
 
+#define N_ligne 16
 
 void initElf(Elf32_info *elf,FILE *file){
 	if(fread(&elf->header,sizeof(elf->header),1,file)){
-			printf("réussir à lire header\n");
+			//printf("réussir à lire header\n");
 			//if big endian then swap to little endian
 			if(elf->header.e_ident[EI_DATA]==2){		
 				setto_little_endian(elf);
 			}
 	}
+	if(elf->header.e_shnum == 0){
+		printf("\nIl n'y a pas de sections dans ce fichier.\n");
+		
+	}else{
+		elf->section = malloc(sizeof(Elf32_Shdr) * swap_uint16(elf->header.e_shnum)); //allocation de table de section
 
-}
-
-void affiche_Magic(Elf32_info elf){
-	for(int i=0;i<16;i++){
-		printf("%02x ",elf.header.e_ident[i]);
-    }
-}
-
-
-
-void affiche_Classe(Elf32_info elf){
-	for(int i=EI_MAG1;i<=EI_MAG3;i++){
-		printf("%c",elf.header.e_ident[i]);
-
-	}
-	switch(elf.header.e_ident[EI_CLASS]){
-		case ELFCLASSNONE:
-			printf("Invalid");
-			break;
-		case ELFCLASS32:
-			printf("32");
-			break;
-		case ELFCLASS64:
-			printf("64");
-			break;
+		lire_Section_table(elf,file);
+		init_strtable(elf,file);
 	}
 
-}
-void affiche_DATA(Elf32_info elf){
-	switch(elf.header.e_ident[EI_DATA]){
-		case ELFDATANONE: printf("Invalid");
-			break;
-		case ELFDATA2LSB: printf("2's complement, little endian");
-			break;
-		case ELFDATA2MSB: printf("2's complement, big endian");
-			break;
-	}
-}
-
-void affiche_Version(Elf32_info elf){
-	if(elf.header.e_ident[EI_VERSION]==EV_CURRENT)
-		printf("%d(current)\n",elf.header.e_ident[EI_VERSION]);
-	printf("  OS/ABI:\t\t\t");
-	switch(elf.header.e_ident[EI_OSABI]){
-		case ELFOSABI_NONE:printf("UNIX System V ABI\n");
-			break;
-		case ELFOSABI_LINUX:printf("linux\n");
-			break;
-	}
-	printf("  Version ABI:\t\t\t");
-	printf("%d\n",elf.header.e_ident[8]);
+	
 
 }
-void affiche_Type(Elf32_info elf){
-	switch(elf.header.e_type){
-		case ET_NONE: printf("No file");
-				break;
-		case ET_REL: printf("REL");
-				break;
-		case ET_EXEC: printf("EXEC");
-				break;
-		case ET_DYN: printf("DYN");
-				break;
-		case ET_CORE: printf("CORE");
-				break;
-		case ET_LOPROC: printf("LOPROC");
-				break;
-		case ET_HIPROC: printf("HIPROC");
-				break;
-	}
-	//valeur de type : 
-	//printf("%02x\n",elf.header.e_type);
-}
 
-void affiche_Machine(Elf32_info elf){
-	switch(elf.header.e_machine){
-		case EM_NONE: printf("No machine");
-			break;
-		case EM_M32: printf("AT&T WE 32100");
-			break;
-		case EM_SPARC: printf("SUN SPARC");
-			break;
-		case EM_386: printf("Intel 80386");
-			break;
-		case EM_68K: printf("Motorola m68k family ");
-			break;
-		case EM_88K: printf("Motorola m88k family");
-			break;
-		case EM_860: printf("Intel 80860");
-			break;
-		case EM_ARM :printf("ARM");
-			break;
-		default:printf("unknown");
-			break;
-	}
-	printf("\n");
-
-}
 
 
 void afficheHeader(Elf32_info elf){
@@ -158,20 +72,94 @@ void afficheHeader(Elf32_info elf){
 	printf("  Table d'indexes des chaines d'en-tete de section:\t%d\n",elf.header.e_shstrndx);
 
 }
-void setto_little_endian(Elf32_info *elf){
 
-	elf->header.e_type = swap_uint16(elf->header.e_type);
-	elf->header.e_machine = swap_uint16(elf->header.e_machine);
-	elf->header.e_version = swap_uint32(elf->header.e_version);
-	elf->header.e_entry = swap_uint32(elf->header.e_entry);
-	elf->header.e_phoff = swap_uint32(elf->header.e_phoff);
-	elf->header.e_shoff = swap_uint32(elf->header.e_shoff);
-	elf->header.e_flags = swap_int32(elf->header.e_flags);
-	elf->header.e_ehsize = swap_uint16(elf->header.e_ehsize);
-	elf->header.e_phentsize = swap_uint16(elf->header.e_phentsize);
-	elf->header.e_phnum = swap_uint16(elf->header.e_phnum);
-	elf->header.e_shentsize = swap_uint16(elf->header.e_shentsize);
-	elf->header.e_shnum = swap_uint16(elf->header.e_shnum);
-	elf->header.e_shstrndx = swap_uint16(elf->header.e_shstrndx);
-	
+
+void afficheTableSection(Elf32_info elf,FILE *file){
+	printf("Il y a %d en-têtes de section, débutant à l'adresse de décalage : 0x%lx\n", elf.header.e_shnum,(unsigned long )elf.header.e_shoff);
+	printf("\n");
+	printf("En-tetes de section :\n");
+
+    printf("[Nr]\tNom\t\t    Type           Adr      Decal  Taille ES Fan\tLN\tInf\tAl\n");
+    fseek(file,elf.header.e_shoff,SEEK_SET);
+    int i;
+    char *strFlags;
+    for(i=0;i<elf.header.e_shnum;i++){
+    	printf("[%d]\t",i);
+		printf("%-20.20s", elf.section[i].sh_name+elf.strtable);
+		printf("%s ",getSectionType(elf.section[i]));
+		printf("%08x ",elf.section[i].sh_addr);
+		printf("%06x ",elf.section[i].sh_offset);
+		printf("%06x ",elf.section[i].sh_size);
+		printf("%02x ",elf.section[i].sh_entsize);
+		strFlags = get_elf_section_flags(elf.section[i].sh_flags);
+		printf("%s\t\t",strFlags);
+		free(strFlags);
+		printf("%d\t",elf.section[i].sh_link);
+		printf("%d\t",elf.section[i].sh_info);
+		printf("%d\n",elf.section[i].sh_addralign);		
+    }
+ 	printf("Clé des fanions :\n W (écriture), A (allocation), X (exécution), I (info), M (fusion)\n");
 }
+
+void afficher_contenu_section(Elf32_info elf,FILE* fsource){
+	int i=0;
+	char nom[32];
+	int numero=-1;
+	printf("Entrez un numéro ou un nom de section pour afficher le contenu:\n");		
+	if(scanf("%s",nom)==0)
+		exit(1);
+	if(nom[0]>='0' && nom[0]<='9' ){
+		numero = atoi(nom);
+	}
+	else{											//recupérer le numero à l'aide du nom
+		while((numero==-1)&&(i<elf.header.e_shnum)){
+			if(!strcmp(nom,(char*)elf.strtable+elf.section[i].sh_name)){
+				numero = i;
+			}
+			i++;
+		}
+	}
+	if(numero<0 || numero>=elf.header.e_shnum){
+		printf("La section saisie n'existe pas!\n");	exit(1);
+	}	
+	int offset = elf.section[numero].sh_offset;		//dacalage de début de section[numero]
+	int size = elf.section[numero].sh_size;			//taille de section[numero]
+	int adresse = elf.section[numero].sh_addr;		//adresse de section[numero]
+	if(size==0){
+		printf("La section « %s » n'a pas de données à vidanger.\n",(char*)elf.strtable+elf.section[numero].sh_name);
+		exit(1);
+	}
+	printf("Vidange hexadécimale de la section« %s »:\n",(char*)elf.strtable+elf.section[numero].sh_name);
+	
+	fseek(fsource, offset , SEEK_SET);
+	unsigned char buf[N_ligne];
+	int count_fread;
+	while(size>0){							//pour chaque ligne faire:
+		printf(" 0x%08x  ",adresse);				//debut d'adresse de chaque ligne
+		count_fread = fread(buf,1,sizeof(buf),fsource);  	
+		if(count_fread==0)
+			exit(1);
+		size-=N_ligne;	adresse+=N_ligne;
+		for(i=0;i<sizeof(buf);i++){
+            if(i<count_fread){
+       		 printf("%02x",buf[i]);
+            }
+            else{
+              printf("   ");
+            }
+			if((i+1)%4==0)
+				printf(" ");
+	    	
+   		 }
+
+		//printf("  %s",buf);
+		for(i=0;i<sizeof(buf);i++){
+		        if(i<count_fread)
+		 			 printf("%c",isprint(buf[i])?buf[i]:'.');
+		        else
+		        	printf(" ");
+	 
+		}
+		printf("\n");
+	}
+}	
