@@ -33,11 +33,6 @@ void read_elf_header(const char* elfFile) {
 
             printf("La table de symboles < %s > contient %d entrées: \n",name,nr_valeurs);
             printf("Num: Valeur      Tail  Type     Lien   Vis         Ndx  Nom   \n");
-            for (int j=0; j < nr_valeurs; j++){
-              
-              fseek(file, __bswap_32( Shdr.sh_offset) + j *sizeof(Sym), SEEK_SET);
-              fread(&Sym, 1, sizeof(Sym), file);
-              
 
               char* SymNames = NULL;
               const char* nameSym = "";
@@ -46,6 +41,13 @@ void read_elf_header(const char* elfFile) {
               SymNames = malloc(__bswap_32(SymShdr.sh_size));
               fseek(file,__bswap_32(SymShdr.sh_offset), SEEK_SET);
               fread(SymNames, 1, __bswap_32(SymShdr.sh_size), file);
+            for (int j=0; j < nr_valeurs; j++){
+              const char* nameSym = "";
+              
+              fseek(file, __bswap_32( Shdr.sh_offset) + j *sizeof(Sym), SEEK_SET);
+              fread(&Sym, 1, sizeof(Sym), file);
+              
+
               
 
 
@@ -95,10 +97,11 @@ void read_elf_header(const char* elfFile) {
               if (Sym.st_name){
                   nameSym =SymNames+__bswap_32(Sym.st_name);}
                   printf("%s\n",nameSym);
-                  free(SymNames);
-                  }
+                                    }
+          free(SymNames);
 
           }
+
       }
       free(SectNames);
     }

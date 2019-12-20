@@ -45,6 +45,14 @@ int main(int argc, char** argv){
 					//affichage du contenu d'une section
 					afficher_contenu_section(elf,fsource);
 						break;
+				case 's':
+					//affichage du contenu d'une section
+					aff_s(elf,fsource);
+						break;
+				case 'r':
+					//affichage du contenu d'une section
+					aff_r(elf,fsource);
+						break;
 			}
 			
 		//}

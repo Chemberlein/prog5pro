@@ -6,9 +6,10 @@ typedef struct{
 	Elf32_Shdr *section;
 	unsigned char *strtable;
 	Elf32_Sym  *symtab;
-	unsigned char *symtable;
-	Elf32_Rel  *reltab;	
+	unsigned char **symtable;
+	Elf32_Rel  **reltab;	
 }Elf32_info;
+
 
 //lecture
 void initialiser_elf(Elf32_info *elf,FILE *fsource);
@@ -17,13 +18,22 @@ void lire_table_section(Elf32_info *elf,FILE *fsource);
 
 void lire_strtab(Elf32_info *elf,FILE *file);
 
+void read_Sym(Elf32_info *elf,FILE *file);
+
+void aff_s(Elf32_info elf,FILE *file);
+void read_SymTable(Elf32_info *elf,FILE *file);
+void read_Rel(Elf32_info *elf,FILE *file);
+
 //affichage
 void afficher_header(Elf32_info elf);
 
 void afficher_table_section(Elf32_info elf);
 
 void afficher_contenu_section(Elf32_info elf,FILE* fsource);
+void aff_r(Elf32_info elf,FILE *file) ;
 
+void aff_s(Elf32_info elf,FILE *file);
+uint16_t print_val_sym(Elf32_info elf,FILE *file,int k);
 //structure
 void setup_little_endian(Elf32_info *elf);
 
