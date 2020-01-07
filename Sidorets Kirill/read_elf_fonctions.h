@@ -47,4 +47,4 @@ uint32_t swap_uint32( uint32_t val );
 int32_t swap_int32( int32_t val );
 
 
-void p2e6(Elf32_info elfo,Elf32_info elft,FILE* f1,FILE* f2);
+void p2e6(Elf32_info elfo,Elf32_info elft);

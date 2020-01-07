@@ -1,5 +1,5 @@
 f: read_elf_fonctions.o f.o
-	gcc read_elf_fonctions.o f.o -o f
+	gcc read_elf_fonctions.o f.o -o fdemo
 
 f.o: f.c read_elf_fonctions.h myelf.h
 	gcc -c f.c

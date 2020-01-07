@@ -14,7 +14,7 @@ int main(int argc, char** argv){
 	Elf32_info elf2;
 	initialiser_elf(&elf1,f1);
 	initialiser_elf(&elf2,f2);
-	p2e6(elf1,elf2,f1,f2);
+	p2e6(elf1,elf2);
 	fclose(f1);
 	fclose(f2);
 	return 0;
