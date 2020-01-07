@@ -28,14 +28,14 @@ Contact: Guillaume.Huard@imag.fr
 #include "baseElf32.h"
 
 
-
-
 int main(int argc, char *argv[]){
 	int opt;
 	struct option longopts[] = {
 		{ "affichageHeader ", no_argument, NULL, 'h' },
 		{ "affichageSection ", no_argument, NULL, 'S' },
 		{ "affichageContenuSection ", no_argument, NULL, 'x'},
+		{ "affichage de la table des symboles ", no_argument, NULL, 's'},
+		{ "affichageRelocation ", no_argument, NULL, 'r'},
 		
 	};
 	
@@ -47,7 +47,7 @@ int main(int argc, char *argv[]){
 		printf("Erreur, entrer un fichier elf en argument.\n");
 		exit(1);
 	}else{
-		while((opt = getopt_long(argc, argv, "hSx", longopts, NULL)) != -1){
+		while((opt = getopt_long(argc, argv, "hSxsr", longopts, NULL)) != -1){
 			initElf(&elf,file);
 			switch(opt){
 			case 'h':				
@@ -61,8 +61,13 @@ int main(int argc, char *argv[]){
 			case 'x':
 				afficher_contenu_section(elf,file);
 				break;
+			case 's':				
+				aff_s(elf,file);
+				break;
+			case 'r':					
+				aff_r(elf,file);
+				break;
 			}
-			
 
 		}
 

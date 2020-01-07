@@ -27,10 +27,12 @@ SIMULATOR_INTERFACE=csapp.h csapp.c scanner.h scanner.l gdb_protocol.h gdb_proto
 ENDIAN_SWAP=swap.h swap.c
 HEADER=header.h header.c 
 SECTION=section.h section.c
+SYMBOLE=symbole.h symbole.c
+RELOCATION=relocation.h relocation.c
 
 ARM_runner_example_SOURCES=$(COMMON) $(SIMULATOR_INTERFACE) ARM_runner_example.c 
 
-readelf_SOURCES= all_elf_func.c all_elf_func.h elf.h $(HEADER) $(SECTION) $(ENDIAN_SWAP) baseElf32.h readelf.c 
+readelf_SOURCES= all_elf_func.c all_elf_func.h elf.h $(HEADER) $(SECTION) $(SYMBOLE) $(RELOCATION) $(ENDIAN_SWAP) baseElf32.h readelf.c 
 
 
 

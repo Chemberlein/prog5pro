@@ -7,8 +7,6 @@ void affiche_Magic(Elf32_info elf){
     }
 }
 
-
-
 void affiche_Classe(Elf32_info elf){
 	for(int i=EI_MAG1;i<=EI_MAG3;i++){
 		printf("%c",elf.header.e_ident[i]);
@@ -27,6 +25,7 @@ void affiche_Classe(Elf32_info elf){
 	}
 
 }
+
 void affiche_DATA(Elf32_info elf){
 	switch(elf.header.e_ident[EI_DATA]){
 		case ELFDATANONE: printf("Invalid");
@@ -52,6 +51,7 @@ void affiche_Version(Elf32_info elf){
 	printf("%d\n",elf.header.e_ident[8]);
 
 }
+
 void affiche_Type(Elf32_info elf){
 	switch(elf.header.e_type){
 		case ET_NONE: printf("No file");
@@ -117,3 +117,45 @@ void setto_little_endian(Elf32_info *elf){
 }
 
 
+void afficheHeader(Elf32_info elf){
+	printf("ELF Header:\n");
+ 	/*e_ident[]*/
+	printf("  Magic number:\t\t");
+	//Magic number
+    affiche_Magic(elf);
+    printf("\n");
+    //Classe
+    printf("  Classe:\t\t\t");
+    affiche_Classe(elf);
+    printf("\n");
+    //Données
+    printf("  Donnees:\t\t");
+    affiche_DATA(elf);
+    printf("\n");
+    //Version
+    printf("  Version:\t\t\t");
+    affiche_Version(elf);
+    /*e_type*/
+	printf("  Type:\t\t\t");
+    affiche_Type(elf);
+    printf("\n");
+    /* e_machine */
+	printf("  Machine:\t\t\t");
+    affiche_Machine(elf);
+    int W=0; // Debug purposes
+	int ait=W; // Debug purposes
+	ait+=ait;
+
+    printf("  Objet file version:            \t\t\t0x%x\n",elf.header.e_version);
+	printf("  Adresse du point d'entree:     \t\t\t0x%x\n",elf.header.e_entry);
+	printf("  Debut des en-tetes de programme:\t\t%d(octets)\n",elf.header.e_phoff);
+	printf("  Debut des en-tetes de section: \t\t\t%d(octets)\n",elf.header.e_shoff);
+	printf("  Flags:                       \t\t\t%#02x\n",elf.header.e_flags);
+	printf("  Taille de cet en-tete:         \t\t\t%d(octets)\n",elf.header.e_ehsize);
+	printf("  Taille de l'en-tete du programme:\t\t\t%d(octets)\n",elf.header.e_phentsize);
+	printf("  Nombre d'en-tete du programme:  \t\t\t%d\n",elf.header.e_phnum);
+	printf("  Taille des en-tetes de section:\t\t\t%d(octets)\n",elf.header.e_shentsize);
+	printf("  Nombre d'en-tetes de section:  \t\t\t%d\n",elf.header.e_shnum);
+	printf("  Table d'indexes des chaines d'en-tete de section:\t%d\n",elf.header.e_shstrndx);
+
+}

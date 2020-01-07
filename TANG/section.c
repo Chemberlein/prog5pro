@@ -1,20 +1,22 @@
 #include <stdlib.h>
 #include "section.h"
 
-void lire_Section_table(Elf32_info *elf,FILE *file){
+#define N_ligne 16
+
+void lire_Section_table(Elf32_info *elf,FILE *file){ 
 		int i;
 		int sechnum=elf->header.e_shnum;
 		fseek(file,elf->header.e_shoff,SEEK_SET);
 		for(i=0;i<sechnum;i++){			
-			if(fread(&elf->section[i],sizeof(Elf32_Shdr),1,file)){
-				if(elf->header.e_ident[EI_DATA]==2){	
+			if(fread(&elf->section[i],sizeof(Elf32_Shdr),1,file)){  // stocke les informations relatives aux sections
+				if(elf->header.e_ident[EI_DATA]==2){	// si en big endian, transformer en little endian
 					sectionto_little_endian(elf,i);
 				}
 			}			
 			
 		}
 } 
-void init_strtable(Elf32_info *elf,FILE *file){
+void init_strtable(Elf32_info *elf,FILE *file){ 
 
 	int shoff=elf->header.e_shoff;
 	int shstrndx=elf->header.e_shstrndx;
@@ -24,7 +26,7 @@ void init_strtable(Elf32_info *elf,FILE *file){
 
 	fseek(file, shoff + shstrndx*shentsize, SEEK_SET);//shoff:  décaler à section header
 		//puis + indexe de secton * taille de chaque section = offset global
-   	if(fread(&strtab, sizeof(Elf32_Shdr),1 , file)){//get the string table header
+   	if(fread(&strtab, sizeof(Elf32_Shdr),1 , file)){//récupérer le string table header
 
    		fseek(file, swap_uint32(strtab.sh_offset), SEEK_SET);
 		elf->strtable = (unsigned char *)malloc(sizeof(unsigned char)*swap_uint32(strtab.sh_size));
@@ -116,3 +118,94 @@ void sectionto_little_endian(Elf32_info *elf,int i){
 
 }
 
+
+void afficheTableSection(Elf32_info elf,FILE *file){
+	printf("Il y a %d en-têtes de section, débutant à l'adresse de décalage : 0x%lx\n", elf.header.e_shnum,(unsigned long )elf.header.e_shoff);
+	printf("\n");
+	printf("En-tetes de section :\n");
+
+    printf("[Nr]\tNom\t\t    Type           Adr      Decal  Taille ES Fan\tLN\tInf\tAl\n");
+    fseek(file,elf.header.e_shoff,SEEK_SET);
+    int i;
+    char *strFlags;
+    for(i=0;i<elf.header.e_shnum;i++){
+    	printf("[%d]\t",i);
+		printf("%-20.20s", elf.section[i].sh_name+elf.strtable);
+		printf("%s ",getSectionType(elf.section[i]));
+		printf("%08x ",elf.section[i].sh_addr);
+		printf("%06x ",elf.section[i].sh_offset);
+		printf("%06x ",elf.section[i].sh_size);
+		printf("%02x ",elf.section[i].sh_entsize);
+		strFlags = get_elf_section_flags(elf.section[i].sh_flags);
+		printf("%s\t\t",strFlags);
+		free(strFlags);
+		printf("%d\t",elf.section[i].sh_link);
+		printf("%d\t",elf.section[i].sh_info);
+		printf("%d\n",elf.section[i].sh_addralign);		
+    }
+ 	printf("Clé des fanions :\n W (écriture), A (allocation), X (exécution), I (info), M (fusion)\n");
+}
+
+
+void afficher_contenu_section(Elf32_info elf,FILE* fsource){
+	int i=0;
+	char nom[32];
+	int numero=-1;
+	printf("Entrez un numéro ou un nom de section pour afficher le contenu:\n");		
+	if(scanf("%s",nom)==0)
+		exit(1);
+	if(nom[0]>='0' && nom[0]<='9' ){
+		numero = atoi(nom);
+	}
+	else{											//recupérer le numero à l'aide du nom
+		while((numero==-1)&&(i<elf.header.e_shnum)){
+			if(!strcmp(nom,(char*)elf.strtable+elf.section[i].sh_name)){
+				numero = i;
+			}
+			i++;
+		}
+	}
+	if(numero<0 || numero>=elf.header.e_shnum){
+		printf("La section saisie n'existe pas!\n");	exit(1);
+	}	
+	int offset = elf.section[numero].sh_offset;		//dacalage de début de section[numero]
+	int size = elf.section[numero].sh_size;			//taille de section[numero]
+	int adresse = elf.section[numero].sh_addr;		//adresse de section[numero]
+	if(size==0){
+		printf("La section « %s » n'a pas de données à vidanger.\n",(char*)elf.strtable+elf.section[numero].sh_name);
+		exit(1);
+	}
+	printf("Vidange hexadécimale de la section« %s »:\n",(char*)elf.strtable+elf.section[numero].sh_name);
+	
+	fseek(fsource, offset , SEEK_SET);
+	unsigned char buf[N_ligne];
+	int count_fread;
+	while(size>0){							//pour chaque ligne faire:
+		printf(" 0x%08x  ",adresse);				//debut d'adresse de chaque ligne
+		count_fread = fread(buf,1,sizeof(buf),fsource);  	
+		if(count_fread==0)
+			exit(1);
+		size-=N_ligne;	adresse+=N_ligne;
+		for(i=0;i<sizeof(buf);i++){
+            if(i<count_fread){
+       		 printf("%02x",buf[i]);
+            }
+            else{
+              printf("   ");
+            }
+			if((i+1)%4==0)
+				printf(" ");
+	    	
+   		 }
+
+		//printf("  %s",buf);
+		for(i=0;i<sizeof(buf);i++){
+		        if(i<count_fread)
+		 			 printf("%c",isprint(buf[i])?buf[i]:'.');
+		        else
+		        	printf(" ");
+	 
+		}
+		printf("\n");
+	}
+}	
