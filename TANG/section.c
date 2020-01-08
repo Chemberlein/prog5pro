@@ -18,21 +18,11 @@ void lire_Section_table(Elf32_info *elf,FILE *file){
 } 
 void init_strtable(Elf32_info *elf,FILE *file){ 
 
-	int shoff=elf->header.e_shoff;
-	int shstrndx=elf->header.e_shstrndx;
-	int shentsize=elf->header.e_shentsize;
-	//printf("shstrndx %d %d\n",shstrndx,shentsize );
-	Elf32_Shdr strtab;
-
-	fseek(file, shoff + shstrndx*shentsize, SEEK_SET);//shoff:  décaler à section header
-		//puis + indexe de secton * taille de chaque section = offset global
-   	if(fread(&strtab, sizeof(Elf32_Shdr),1 , file)){//récupérer le string table header
-
-   		fseek(file, swap_uint32(strtab.sh_offset), SEEK_SET);
-		elf->strtable = (unsigned char *)malloc(sizeof(unsigned char)*swap_uint32(strtab.sh_size));
-    	if(fread(elf->strtable, swap_uint32(strtab.sh_size),1, file)){
-    	}
-    }
+	Elf32_Shdr strtab = elf->section[elf->header.e_shstrndx];
+	fseek(file, strtab.sh_offset, SEEK_SET);
+	elf->strtable = (unsigned char *)malloc(sizeof(unsigned char)*strtab.sh_size);
+	if(fread(elf->strtable, strtab.sh_size,1, file)){}
+ 
 }
 
 char * getSectionType(Elf32_Shdr sh){

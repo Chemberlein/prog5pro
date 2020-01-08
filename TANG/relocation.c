@@ -26,6 +26,7 @@ void read_Rel(Elf32_info *elf,FILE *file){   //Stocker les infos de tables de r√
 
 void aff_r(Elf32_info elf,FILE *file) { //Affichage de tables de r√©implantation
   int nr_valeurs;
+  uint16_t boo = 0;
   for (int i = 0; i < elf.header.e_shnum; i++){
       if (elf.section[i].sh_type==SHT_REL){
         nr_valeurs = elf.section[i].sh_size / elf.section[i].sh_entsize; //nombre de tables
