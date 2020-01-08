@@ -21,7 +21,7 @@ void init_strtable(Elf32_info *elf,FILE *file){
 	int shoff=elf->header.e_shoff;
 	int shstrndx=elf->header.e_shstrndx;
 	int shentsize=elf->header.e_shentsize;
-	printf("shstrndx %d %d\n",shstrndx,shentsize );
+	//printf("shstrndx %d %d\n",shstrndx,shentsize );
 	Elf32_Shdr strtab;
 
 	fseek(file, shoff + shstrndx*shentsize, SEEK_SET);//shoff:  décaler à section header
