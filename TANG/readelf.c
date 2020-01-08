@@ -28,14 +28,22 @@ Contact: Guillaume.Huard@imag.fr
 #include "baseElf32.h"
 
 
+void usage(char *name) {
+	fprintf(stderr, "Usage:\n"
+		"%s [ -debug file ] [ -Option ] \n\n"
+		
+		, name);
+}
+
 int main(int argc, char *argv[]){
 	int opt;
 	struct option longopts[] = {
-		{ "affichageHeader ", no_argument, NULL, 'h' },
-		{ "affichageSection ", no_argument, NULL, 'S' },
-		{ "affichageContenuSection ", no_argument, NULL, 'x'},
-		{ "affichage de la table des symboles ", no_argument, NULL, 's'},
-		{ "affichageRelocation ", no_argument, NULL, 'r'},
+		{ "affichageHeader ", optional_argument, NULL, 'h' },
+		{ "affichageSection ", optional_argument, NULL, 'S' },
+		{ "affichageContenuSection ", optional_argument, NULL, 'x'},
+		{ "affichage de la table des symboles ", optional_argument, NULL, 's'},
+		{ "affichageRelocation ", optional_argument, NULL, 'r'},
+		{ "getNombreDeSection", no_argument,NULL,'T'},
 		
 	};
 	
@@ -47,26 +55,36 @@ int main(int argc, char *argv[]){
 		printf("Erreur, entrer un fichier elf en argument.\n");
 		exit(1);
 	}else{
-		while((opt = getopt_long(argc, argv, "hSxsr", longopts, NULL)) != -1){
+		while((opt = getopt_long(argc, argv, "hSxsrT", longopts, NULL)) != -1){
 			initElf(&elf,file);
+			//printf("optarg = %s\n", optarg);
+			
 			switch(opt){
 			case 'h':				
 				//etape 1
-				afficheHeader(elf);
+				afficheHeader(elf);		
 				break;
 			case 'S':
 				//etape 2
-				afficheTableSection(elf,file);
+				afficheTableSection(elf,file);				
 				break;
 			case 'x':
-				afficher_contenu_section(elf,file);
+				afficher_contenu_section(elf,file);				
 				break;
 			case 's':				
-				aff_s(elf,file);
+				aff_s(elf,file);				
 				break;
 			case 'r':					
-				aff_r(elf,file);
+				aff_r(elf,file);				
 				break;
+			case 'T':
+				getNbSection(elf);
+				break;
+			default:
+				fprintf(stderr, "Unrecognized option %c\n", opt);
+				usage(argv[0]);
+				exit(1);
+
 			}
 
 		}
@@ -74,7 +92,7 @@ int main(int argc, char *argv[]){
 	}
 
 	fclose(file);
-
+	liberer(&elf);
 
 
 	return 0;

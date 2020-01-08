@@ -55,3 +55,31 @@ void read_progbits(Elf32_info *elf,FILE *file){
 	}
 
 }
+
+void liberer(Elf32_info *elf){
+	free(elf->section);
+	free(elf->strtable);
+	free(elf->symtab);
+	int i;
+	for(i = 0 ; i <elf->header.e_shnum;i++){
+		free(elf->symtable[i]);
+		free(elf->reltab[i]);
+	}
+	free(elf->symtable);
+	free(elf->reltab);
+}
+
+void getNbSection(Elf32_info elf){ //
+    FILE *fout;
+    fout=fopen("section.tmp","w");
+    if(fout==NULL)
+    {
+        printf("File cannot open! " );
+        exit(0);
+    }
+ 
+    //écrire le nombre de section dans le fichier tmp.txt pour générer le chiffre aléatoire entre 0 et nombre de section
+    fprintf(fout,"%d\t", elf.header.e_shnum);
+    fclose(fout);
+   
+}
