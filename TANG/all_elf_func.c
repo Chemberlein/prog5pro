@@ -69,7 +69,7 @@ void liberer(Elf32_info *elf){
 	free(elf->reltab);
 }
 
-void getNbSection(Elf32_info elf){ //
+void getNbSection(Elf32_info elf){ 
     FILE *fout;
     fout=fopen("section.tmp","w");
     if(fout==NULL)
