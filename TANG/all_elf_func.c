@@ -77,7 +77,7 @@ void getNbSection(Elf32_info elf){ //
         printf("File cannot open! " );
         exit(0);
     }
- 
+ 	
     //écrire le nombre de section dans le fichier tmp.txt pour générer le chiffre aléatoire entre 0 et nombre de section
     fprintf(fout,"%d\t", elf.header.e_shnum);
     fclose(fout);
