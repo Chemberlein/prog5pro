@@ -110,32 +110,34 @@ void sectionto_little_endian(Elf32_info *elf,int i){
 
 
 void afficheTableSection(Elf32_info elf,FILE *file){
-	printf("Il y a %d en-têtes de section, débutant à l'adresse de décalage : 0x%lx\n", elf.header.e_shnum,(unsigned long )elf.header.e_shoff);
+	printf("Il y a %d en-têtes de section, débutant à l'adresse de décalage  0x%lx:\n", elf.header.e_shnum,(unsigned long )elf.header.e_shoff);
 	printf("\n");
 	printf("En-tetes de section :\n");
 
-    printf("[Nr]\tNom\t\t    Type           Adr      Decal  Taille ES Fan\tLN\tInf\tAl\n");
+    printf("  [Nr] Nom               Type            Adr      Décala.Taille ES Fan LN Inf Al\n");
     fseek(file,elf.header.e_shoff,SEEK_SET);
     int i;
     char *strFlags;
     for(i=0;i<elf.header.e_shnum;i++){
-    	printf("[%d]\t",i);
-		printf("%-20.20s", elf.section[i].sh_name+elf.strtable);
-		printf("%s ",getSectionType(elf.section[i]));
-		printf("%08x ",elf.section[i].sh_addr);
+    	printf("  [ %d] ",i);
+		printf("%-16.19s", elf.section[i].sh_name+elf.strtable);
+		printf("  %s",getSectionType(elf.section[i]));
+		printf("%08x      ",elf.section[i].sh_addr);
 		printf("%06x ",elf.section[i].sh_offset);
 		printf("%06x ",elf.section[i].sh_size);
 		printf("%02x ",elf.section[i].sh_entsize);
 		strFlags = get_elf_section_flags(elf.section[i].sh_flags);
-		printf("%s\t\t",strFlags);
+		printf("%s",strFlags);
 		free(strFlags);
-		printf("%d\t",elf.section[i].sh_link);
-		printf("%d\t",elf.section[i].sh_info);
+		printf("%d ",elf.section[i].sh_link);
+		printf("%d ",elf.section[i].sh_info);
 		printf("%d\n",elf.section[i].sh_addralign);		
     }
- 	printf("Clé des fanions :\n W (écriture), A (allocation), X (exécution), I (info), M (fusion)\n");
-}
+ 	printf("Clé des fanions :\n W (écriture), A (allocation), X (exécution), I (info), M (fusion),  S (chaînes), I (info), \n");
+      printf("L (ordre des liens), O (traitement supplémentaire par l'OS requis), G (groupe), \n");
+       printf("y (purecode), p (processor specific)\n");
 
+}
 
 void afficher_contenu_section(Elf32_info elf,FILE* fsource){
 	int i=0;

@@ -30,24 +30,24 @@ void affiche_DATA(Elf32_info elf){
 	switch(elf.header.e_ident[EI_DATA]){
 		case ELFDATANONE: printf("Invalid");
 			break;
-		case ELFDATA2LSB: printf("2's complement, little endian");
+		case ELFDATA2LSB: printf("complément à 2, système à octets de poids faible d'abord (little endian)");
 			break;
-		case ELFDATA2MSB: printf("2's complement, big endian");
+		case ELFDATA2MSB: printf("complément à 2, système à octets de poids fort d'abord (big endian)");
 			break;
 	}
 }
 
 void affiche_Version(Elf32_info elf){
 	if(elf.header.e_ident[EI_VERSION]==EV_CURRENT)
-		printf("%d(current)\n",elf.header.e_ident[EI_VERSION]);
-	printf("  OS/ABI:\t\t\t");
+		printf("%d (current)\n",elf.header.e_ident[EI_VERSION]);
+	printf("  OS/ABI:                            ");
 	switch(elf.header.e_ident[EI_OSABI]){
-		case ELFOSABI_NONE:printf("UNIX System V ABI\n");
+		case ELFOSABI_NONE:printf("UNIX - System V\n");
 			break;
 		case ELFOSABI_LINUX:printf("linux\n");
 			break;
 	}
-	printf("  Version ABI:\t\t\t");
+	printf("  Version ABI:                       ");
 	printf("%d\n",elf.header.e_ident[8]);
 
 }
@@ -56,7 +56,7 @@ void affiche_Type(Elf32_info elf){
 	switch(elf.header.e_type){
 		case ET_NONE: printf("No file");
 				break;
-		case ET_REL: printf("REL");
+		case ET_REL: printf("REL (Fichier de réadressage)");
 				break;
 		case ET_EXEC: printf("EXEC");
 				break;
@@ -118,44 +118,44 @@ void setto_little_endian(Elf32_info *elf){
 
 
 void afficheHeader(Elf32_info elf){
-	printf("ELF Header:\n");
+	printf("En-tête ELF:\n");
  	/*e_ident[]*/
-	printf("  Magic number:\t\t");
+	printf("  Magique:   ");
 	//Magic number
     affiche_Magic(elf);
     printf("\n");
     //Classe
-    printf("  Classe:\t\t\t");
+    printf("  Classe:                            ");
     affiche_Classe(elf);
     printf("\n");
     //Données
-    printf("  Donnees:\t\t");
+    printf("  Données:                          ");
     affiche_DATA(elf);
     printf("\n");
     //Version
-    printf("  Version:\t\t\t");
+    printf("  Version:                           ");
     affiche_Version(elf);
     /*e_type*/
-	printf("  Type:\t\t\t");
+	printf("  Type:                              ");
     affiche_Type(elf);
     printf("\n");
     /* e_machine */
-	printf("  Machine:\t\t\t");
+	printf("  Machine:                           ");
     affiche_Machine(elf);
     int W=0; // Debug purposes
 	int ait=W; // Debug purposes
 	ait+=ait;
 
-    printf("  Objet file version:            \t\t\t0x%x\n",elf.header.e_version);
-	printf("  Adresse du point d'entree:     \t\t\t0x%x\n",elf.header.e_entry);
-	printf("  Debut des en-tetes de programme:\t\t%d(octets)\n",elf.header.e_phoff);
-	printf("  Debut des en-tetes de section: \t\t\t%d(octets)\n",elf.header.e_shoff);
-	printf("  Flags:                       \t\t\t%#02x\n",elf.header.e_flags);
-	printf("  Taille de cet en-tete:         \t\t\t%d(octets)\n",elf.header.e_ehsize);
-	printf("  Taille de l'en-tete du programme:\t\t\t%d(octets)\n",elf.header.e_phentsize);
-	printf("  Nombre d'en-tete du programme:  \t\t\t%d\n",elf.header.e_phnum);
-	printf("  Taille des en-tetes de section:\t\t\t%d(octets)\n",elf.header.e_shentsize);
-	printf("  Nombre d'en-tetes de section:  \t\t\t%d\n",elf.header.e_shnum);
-	printf("  Table d'indexes des chaines d'en-tete de section:\t%d\n",elf.header.e_shstrndx);
+    printf("  Version:                           0x%x\n",elf.header.e_version);
+	printf("  Adresse du point d'entrée:               0x%x\n",elf.header.e_entry);
+	printf("  Début des en-têtes de programme :          %d (octets dans le fichier)\n",elf.header.e_phoff);
+	printf("  Début des en-têtes de section :          %d (octets dans le fichier)\n",elf.header.e_shoff);
+	printf("  Fanions:                           %#02x, Version5 EABI\n",elf.header.e_flags);
+	printf("  Taille de cet en-tête:             %d (octets)\n",elf.header.e_ehsize);
+	printf("  Taille de l'en-tête du programme:  %d (octets)\n",elf.header.e_phentsize);
+	printf("  Nombre d'en-tête du programme:     %d\n",elf.header.e_phnum);
+	printf("  Taille des en-têtes de section:    %d (octets)\n",elf.header.e_shentsize);
+	printf("  Nombre d'en-têtes de section:      %d\n",elf.header.e_shnum);
+	printf("  Table d'indexes des chaînes d'en-tête de section: %d\n",elf.header.e_shstrndx);
 
 }

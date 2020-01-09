@@ -15,8 +15,7 @@
 */
 void initElf(Elf32_info *elf,FILE *file);
 
-//
-void read_progbits(Elf32_info *elf,FILE *file);
+
 
 
 //libérer la mémoire qui est alloué par la fonction initElf
@@ -29,4 +28,18 @@ void getNbSection(Elf32_info elf);
 
 
 
+void insert_bit(FILE *f3, Elf32_info *elf2, int dec_from_be, int size_of_fo, int size2 ,int nr_sec);   // la funtion pour concatener les bits
+
+void insert_bit_end(FILE *f3, Elf32_info *elf2, int nr_sec, int size);   //la function pour ecrir les bits a la fin du fichier
+
+void concatener(Elf32_info *elf1, Elf32_info *elf2, Elf32_info *elf3 ,FILE *f3, FILE *f2) ;   //la functions qui parcours les deux ELF files et les concatenne
+
+
+//partie 2 
+
+void read_progbits(Elf32_info *elf,FILE *file);
+
+int funForFindIndex(Elf32_info elfo,Elf32_info elft,int ind1);
+
+void p2(Elf32_info elfo,Elf32_info elft);
 

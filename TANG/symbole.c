@@ -64,7 +64,7 @@ void read_SymTable(Elf32_info *elf,FILE *file){
 uint16_t print_val_sym(Elf32_info elf,FILE *file,int k) { 
   for (int i = 0; i <elf.header.e_shnum; i++){
     if (elf.section[i].sh_type==SHT_SYMTAB){  //si le type est SYMTAB ,afficher l'information qui a été enregistré dans elf.symtab
-      printf("%d-0x%08x  ", k,elf.symtab[k].st_value ); 
+      printf("%08x  ", elf.symtab[k].st_value ); 
       if (elf.symtab[k].st_name){   //si il y a un nom
         printf("%s",(char*)elf.symtable[i]+elf.symtab[k].st_name); 
         return 0;
@@ -77,6 +77,7 @@ uint16_t print_val_sym(Elf32_info elf,FILE *file,int k) {
 
 
 
+
 void aff_s(Elf32_info elf,FILE *file) {  // Affichage de tables de symbole
   int nr_valeurs;
   for (int i = 0; i < elf.header.e_shnum; i++){
@@ -84,9 +85,9 @@ void aff_s(Elf32_info elf,FILE *file) {  // Affichage de tables de symbole
         nr_valeurs = elf.section[i].sh_size / elf.section[i].sh_entsize;
         printf("La table de symboles < %s > contient %d entrées: \n",(char*)elf.strtable+elf.section[i].sh_name,nr_valeurs);
         printf("Num: Valeur      Tail  Type     Lien   Vis         Ndx  Nom   \n");        
-            for (int j=0; j < nr_valeurs; j++){            	
-            	printf("%-5d",j);
-              	printf("0x%08x  ", elf.symtab[j].st_value );
+            for (int j=0; j < nr_valeurs; j++){             
+              printf("%-5d:",j);
+                printf("0x%08x  ", elf.symtab[j].st_value );
               printf("%-5d ",elf.symtab[j].st_size);
               switch(ELF32_ST_TYPE(elf.symtab[j].st_info)){
                 case STT_SECTION:
@@ -122,8 +123,8 @@ void aff_s(Elf32_info elf,FILE *file) {  // Affichage de tables de symbole
 
               printf("%d ", elf.symtab[j].st_shndx);
               if(elf.symtab[j].st_name)
-              	printf("%s",(char*)elf.symtable[i]+elf.symtab[j].st_name);
-          	  printf("\n");
+                printf("%s",(char*)elf.symtable[i]+elf.symtab[j].st_name);
+              printf("\n");
           }
       }
   }

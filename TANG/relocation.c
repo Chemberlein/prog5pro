@@ -31,21 +31,21 @@ void aff_r(Elf32_info elf,FILE *file) { //Affichage de tables de réimplantation
       if (elf.section[i].sh_type==SHT_REL){
         nr_valeurs = elf.section[i].sh_size / elf.section[i].sh_entsize; //nombre de tables
 
-        printf("Section de readressage ' %s ' a l'adresse de decalage: 0x%x contient %d entree:\n\n",(char*)elf.strtable+elf.section[i].sh_name, elf.section[i].sh_offset,  nr_valeurs);
-        printf("Decalage     Info         Type         Val.-sym       Noms-symboles\n");
+        printf("Section de réadressage ' %s ' à l'adresse de décalage 0x%x contient %d entrées:\n\n",(char*)elf.strtable+elf.section[i].sh_name, elf.section[i].sh_offset,  nr_valeurs);
+        printf("Décalage     Info         Type         Val.-sym       Noms-symboles\n");
         for (int j=0 ; j<nr_valeurs; j++){
           printf("0x%08x   ",elf.reltab[i][j].r_offset); //offset
           printf("0x%08x   ",elf.reltab[i][j].r_info);  //info
           switch (ELF32_R_TYPE(elf.reltab[i][j].r_info)) {  //type
-            case R_ARM_NONE: printf("%15.15s \t","R_ARM_NONE"); break;
-            case R_ARM_PC24: printf("%15.15s \t","R_ARM_PC24"); break;
-            case R_ARM_ABS32: printf("%15.15s \t","R_ARM_ABS32"); break;
-            case R_ARM_REL32: printf("%15.15s \t","R_ARM_REL32"); break;
-            case R_ARM_PLT32: printf("%15.15s \t","R_ARM_PLT32");break;
-            case R_ARM_CALL: printf("%15.15s \t","R_ARM_CALL");break;
-            case R_ARM_JUMP24: printf("%-15s \t","R_ARM_JUMP24");break;
-            case R_ARM_THM_JUMP24: printf("%15.15s \t","R_ARM_THM_JUMP24");break;
-            default: printf("%15.15s \t", "type non connu!"); break;
+            case R_ARM_NONE: printf("%15.15s  ","R_ARM_NONE"); break;
+            case R_ARM_PC24: printf("%15.15s  ","R_ARM_PC24"); break;
+            case R_ARM_ABS32: printf("%15.15s  ","R_ARM_ABS32"); break;
+            case R_ARM_REL32: printf("%15.15s  ","R_ARM_REL32"); break;
+            case R_ARM_PLT32: printf("%15.15s  ","R_ARM_PLT32");break;
+            case R_ARM_CALL: printf("%15.15s  ","R_ARM_CALL");break;
+            case R_ARM_JUMP24: printf("%-15s  ","R_ARM_JUMP24");break;
+            case R_ARM_THM_JUMP24: printf("%15.15s  ","R_ARM_THM_JUMP24");break;
+            default: printf("%15.15s  ", "type non connu!"); break;
           }
 
           boo=print_val_sym(elf,file, ELF32_R_SYM(elf.reltab[i][j].r_info));//Val.-sym
