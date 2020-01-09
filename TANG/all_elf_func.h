@@ -20,7 +20,7 @@ void read_progbits(Elf32_info *elf,FILE *file);
 
 
 //libérer la mémoire qui est alloué par la fonction initElf
-void liberer(Elf32_info *elf);
+void liberer(Elf32_info elf);
 
 
 //Écrire le nombre de section dans un fichier temporaire

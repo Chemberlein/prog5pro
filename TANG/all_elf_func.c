@@ -56,17 +56,26 @@ void read_progbits(Elf32_info *elf,FILE *file){
 
 }
 
-void liberer(Elf32_info *elf){
-	free(elf->section);
-	free(elf->strtable);
-	free(elf->symtab);
-	int i;
-	for(i = 0 ; i <elf->header.e_shnum;i++){
-		free(elf->symtable[i]);
-		free(elf->reltab[i]);
+void liberer(Elf32_info elf){
+	int i,j;	
+	int nr_valeurs ;
+	
+
+	for(i = 0 ; i <elf.header.e_shnum;i++){
+		if (elf.section[i].sh_type==SHT_SYMTAB){			
+			nr_valeurs = elf.section[i].sh_size / elf.section[i].sh_entsize;			
+			for(j = 0 ; j<nr_valeurs;j++ ){
+				free(elf.symtable[j]);
+				free(elf.reltab[j]);
+			}
+		}
 	}
-	free(elf->symtable);
-	free(elf->reltab);
+	free(elf.symtable);
+	free(elf.symtab);
+	free(elf.reltab);
+	free(elf.section);
+	free(elf.strtable);
+	
 }
 
 void getNbSection(Elf32_info elf){ 

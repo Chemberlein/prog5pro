@@ -92,7 +92,7 @@ int main(int argc, char *argv[]){
 	}
 
 	fclose(file);
-	liberer(&elf);
+	liberer(elf);
 
 
 	return 0;

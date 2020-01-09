@@ -36,22 +36,27 @@ void read_Sym(Elf32_info *elf,FILE *file){
 	elf-> symtable =malloc (tableSize * sizeof (unsigned char *));  //allouer une table  de chaîne de caractères pour afficher le nom de la table des symboles
 }
 
+
+
 void read_SymTable(Elf32_info *elf,FILE *file){
-	Elf32_Shdr SymShdr;
-	for(int i = 0;i<elf->header.e_shnum;i++){
-		if (elf->section[i].sh_type==SHT_SYMTAB){
-      fseek(file,elf->header.e_shoff+elf->section[i].sh_link*elf->header.e_shentsize, SEEK_SET); //trouver l'endroit où sauvegarder le nom de symbole
-      char* SymNames = NULL;
-      if(fread(&SymShdr,1,elf->header.e_shentsize,file)){}
-      SymNames = malloc(__bswap_32(SymShdr.sh_size));
-      if(SymNames == NULL){
-       	printf("impossible à lire la table de symboles\n");
-      }
-      fseek(file,__bswap_32(SymShdr.sh_offset), SEEK_SET);
-      elf->symtable[i] = (unsigned char *) malloc (__bswap_32(SymShdr.sh_size) * sizeof(unsigned char)); //allouer la mémoire puis stocker le nom dans symtable
-      if(fread(elf->symtable[i], 1, __bswap_32(SymShdr.sh_size), file)){}       
-		}
-	}
+  Elf32_Shdr SymShdr;
+  int indice=0;
+  for(int i=0;i<elf->header.e_shnum;i++){ //obtenir la valeur de section de type STRTAB
+    if(elf->section[i].sh_type == SHT_STRTAB && i!=elf->header.e_shstrndx)
+      indice=i;
+  }
+  SymShdr = elf->section[indice];
+  for(int i = 0;i<elf->header.e_shnum;i++){  //récupérer le nom de symboles
+    if (elf->section[i].sh_type==SHT_SYMTAB){
+              char* SymNames = NULL;
+              SymNames = malloc(SymShdr.sh_size);
+              if(SymNames == NULL)
+                printf("impossible à lire la table de symboles\n");
+              fseek(file,SymShdr.sh_offset, SEEK_SET);
+              elf->symtable[i] = (unsigned char *) malloc (SymShdr.sh_size * sizeof(unsigned char)); //allouer la mémoire puis stocker le nom dans symtable
+              if(fread(elf->symtable[i], 1, SymShdr.sh_size, file)){}        
+    }
+  }
 }
 
 
