@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <string.h> 
+#include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
 #include "read_elf_fonctions.h"
@@ -10,7 +10,7 @@ void initialiser_elf(Elf32_info *elf,FILE *fsource){
 	size_t res = fread(&elf->header,sizeof(elf->header),1,fsource);		//lire header
 	if(res==0)
 		exit(1);
-	if(elf->header.e_ident[EI_DATA]==2)	
+	if(elf->header.e_ident[EI_DATA]==2)
 		setup_little_endian(elf);
 
 	lire_strtab(elf,fsource);
@@ -32,15 +32,15 @@ void lire_strtab(Elf32_info *elf,FILE *fsource){
 	Elf32_Shdr strtab;
 
 	fseek(fsource, shoff + shstrndx*shentsize, SEEK_SET);
-	size_t res=fread(&strtab, sizeof(char), sizeof(Elf32_Shdr), fsource);//get the string table header  
+	size_t res=fread(&strtab, sizeof(char), sizeof(Elf32_Shdr), fsource);//get the string table header
 	if(res==0)
 		exit(1);
 	fseek(fsource, swap_uint32(strtab.sh_offset), SEEK_SET);
 	elf->strtable = (unsigned char *)malloc(sizeof(unsigned char)*swap_uint32(strtab.sh_size));//????this will work only if  we need do swap why you donbt use elf->section[elf->heder.e_shstrndx]????fix this??
-	res=fread(elf->strtable, sizeof(char), swap_uint32(strtab.sh_size), fsource);	
+	res=fread(elf->strtable, sizeof(char), swap_uint32(strtab.sh_size), fsource);
 	if(res==0)
 		exit(1);
-	
+
 }
 
 void lire_table_section(Elf32_info *elf,FILE *fsource){
@@ -51,7 +51,7 @@ void lire_table_section(Elf32_info *elf,FILE *fsource){
 		size_t res = fread(&elf->section[i],sizeof(char),sizeof(Elf32_Shdr),fsource);
 		if(res==0)
 			exit(1);
-		if(elf->header.e_ident[EI_DATA]==2){	
+		if(elf->header.e_ident[EI_DATA]==2){
 			elf->section[i].sh_name = swap_uint32(elf->section[i].sh_name);
 			elf->section[i].sh_type = swap_uint32(elf->section[i].sh_type);
 			elf->section[i].sh_addr = swap_uint32(elf->section[i].sh_addr);
@@ -67,7 +67,7 @@ void lire_table_section(Elf32_info *elf,FILE *fsource){
 }
 
 
-	
+
 void read_Sym(Elf32_info *elf,FILE *file){
 	int nbSym=0;
 	int tableSize=0;
@@ -76,7 +76,7 @@ void read_Sym(Elf32_info *elf,FILE *file){
 		if(elf->section[i].sh_type==SHT_SYMTAB){
 			nbSym=(elf->section[i].sh_size/elf->section[i].sh_entsize)+nbSym;
 		}
-	}	
+	}
 	elf->symtab=malloc(sizeof(Elf32_Sym)*nbSym);
 	for(int i = 0;i<elf->header.e_shnum;i++){
 		if(elf->section[i].sh_type==SHT_SYMTAB){
@@ -90,17 +90,17 @@ void read_Sym(Elf32_info *elf,FILE *file){
 				tableSize++;
 				if(max<elf->symtab[j].st_size){
 					max=elf->symtab[j].st_size;
-				}				
+				}
 				if(elf->header.e_ident[EI_DATA]==2){
 					elf->symtab[j].st_name=swap_uint32(elf->symtab[j].st_name);
 					elf->symtab[j].st_value=swap_uint32(elf->symtab[j].st_value);
 					elf->symtab[j].st_size=swap_uint32(elf->symtab[j].st_size);
 					elf->symtab[j].st_shndx=swap_uint16(elf->symtab[j].st_shndx);
-				}				
+				}
 			}
 		}
 	}
-	elf-> symtable =malloc (tableSize * sizeof (unsigned char *)); 
+	elf-> symtable =malloc (tableSize * sizeof (unsigned char *));
 }
 
 void read_SymTable(Elf32_info *elf,FILE *file){
@@ -108,36 +108,38 @@ void read_SymTable(Elf32_info *elf,FILE *file){
 	for(int i = 0;i<elf->header.e_shnum;i++){
 		if (elf->section[i].sh_type==SHT_SYMTAB){
               fseek(file,elf->header.e_shoff+elf->section[i].sh_link*elf->header.e_shentsize, SEEK_SET);
-                char* SymNames = NULL;
+              char* SymNames = NULL;
               const char* nameSym = "";
               fread(&SymShdr,1,elf->header.e_shentsize,file);
               SymNames = malloc(__bswap_32(SymShdr.sh_size));
               fseek(file,__bswap_32(SymShdr.sh_offset), SEEK_SET);
               elf-> symtable[i] = (char *)malloc (__bswap_32(SymShdr.sh_size) * sizeof(unsigned char));
-              fread(elf->symtable[i], 1, __bswap_32(SymShdr.sh_size), file);	       
+              fread(elf->symtable[i], 1, __bswap_32(SymShdr.sh_size), file);
 		}
 	}
 }
 
 void read_progbits(Elf32_info *elf,FILE *file){
+	int nb=0;
 	int tableSize=0;
+	for(int i=0;i<elf->header.e_shnum;i++){
+		if(elf->section[i].sh_type==SHT_SYMTAB){
+			nb=(elf->section[i].sh_size/elf->section[i].sh_entsize)+nb;
+		}
+	}
 	for (int i = 0; i < elf->header.e_shnum; ++i){
-		if (elf->section[i].sh_type==SHT_PROGBITS){
-			tableSize++;
+		if ((elf->section[i].sh_type==SHT_PROGBITS)||(elf->section[i].sh_type==SHT_NULL)||(elf->section[i].sh_type==SHT_STRTAB)||(elf->section[i].sh_type==SHT_ARM_ATTRIBUTES)||(elf->section[i].sh_type==SHT_REL)){
+			for (int j = 0;j<nb;j++)tableSize++;
 		}
 	}
 	elf->progbits=malloc(tableSize * sizeof (unsigned char *));
 	for(int i = 0;i<elf->header.e_shnum;i++){
-		if (elf->section[i].sh_type==SHT_PROGBITS){
+		if ((elf->section[i].sh_type==SHT_PROGBITS)||(elf->section[i].sh_type==SHT_NULL)||(elf->section[i].sh_type==SHT_STRTAB)||(elf->section[i].sh_type==SHT_ARM_ATTRIBUTES)||(elf->section[i].sh_type==SHT_REL)){
               fseek(file,elf->section[i].sh_offset, SEEK_SET);
-              elf-> progbits[i] = malloc(elf->section[i].sh_size * sizeof(unsigned char));
-              fread(elf->progbits[i], 1,elf->section[i].sh_size, file);       
+              elf->progbits[i] = malloc(elf->section[i].sh_size * sizeof(unsigned char));
+              fread(elf->progbits[i], 1,elf->section[i].sh_size, file);
 		}
 	}
-	if(elf->header.e_ident[EI_DATA]==2){
-
-	}
-
 }
 
 void read_Rel(Elf32_info *elf,FILE *file){
@@ -161,7 +163,7 @@ void read_Rel(Elf32_info *elf,FILE *file){
           }
       }
     }
-    }	
+    }
 }
 
 void aff_s(Elf32_info elf,FILE *file) {
@@ -225,7 +227,7 @@ uint16_t print_val_sym(Elf32_info elf,FILE *file,int k) {
     if (elf.section[i].sh_type==SHT_SYMTAB){
               printf("%d-0x%08x  ", k,elf.symtab[k].st_value );
                 if (elf.symtab[k].st_name){
-                  printf("%s",(char*)elf.symtable[i]+elf.symtab[k].st_name); 
+                  printf("%s",(char*)elf.symtable[i]+elf.symtab[k].st_name);
                   return 0;
                 }
                  return elf.symtab[k].st_shndx;
@@ -262,11 +264,11 @@ void aff_r(Elf32_info elf,FILE *file) {
           boo=print_val_sym(elf,file, ELF32_R_SYM(elf.reltab[i][j].r_info));
           if(boo!=0){
           if (elf.section[boo].sh_name){printf("%s",(char*)elf.strtable+elf.section[boo].sh_name);}
-            
+
           }
 printf("\n");
 
-         
+
         }
 
 
@@ -280,7 +282,7 @@ void afficher_contenu_section(Elf32_info elf,FILE* fsource){
 	int i=0;
 	char nom[32];
 	int numero=-1;
-	printf("Entrez un numéro ou un nom de section pour afficher le contenu:\n");		
+	printf("Entrez un numéro ou un nom de section pour afficher le contenu:\n");
 	if(scanf("%s",nom)==0)
 		exit(1);
 	if(nom[0]>='0' && nom[0]<='9' ){
@@ -296,7 +298,7 @@ void afficher_contenu_section(Elf32_info elf,FILE* fsource){
 	}
 	if(numero<0 || numero>=elf.header.e_shnum){
 		printf("La section saisie n'existe pas!\n");	exit(1);
-	}	
+	}
 	int offset = elf.section[numero].sh_offset;		//dacalage de début de section[numero]
 	int size = elf.section[numero].sh_size;			//taille de section[numero]
 	int adresse = elf.section[numero].sh_addr;		//adresse de section[numero]
@@ -305,13 +307,13 @@ void afficher_contenu_section(Elf32_info elf,FILE* fsource){
 		exit(1);
 	}
 	printf("Vidange hexadécimale de la section« %s »:\n",(char*)elf.strtable+elf.section[numero].sh_name);
-	
+
 	fseek(fsource, offset , SEEK_SET);
 	unsigned char buf[N_ligne];
 	int count_fread;
 	while(size>0){							//pour chaque ligne faire:
 		printf(" 0x%08x  ",adresse);				//debut d'adresse de chaque ligne
-		count_fread = fread(buf,1,sizeof(buf),fsource);  	
+		count_fread = fread(buf,1,sizeof(buf),fsource);
 		if(count_fread==0)
 			exit(1);
 		size-=N_ligne;	adresse+=N_ligne;
@@ -324,7 +326,7 @@ void afficher_contenu_section(Elf32_info elf,FILE* fsource){
             }
 			if((i+1)%4==0)
 				printf(" ");
-	    	
+
    		 }
 
 		//printf("  %s",buf);
@@ -333,11 +335,11 @@ void afficher_contenu_section(Elf32_info elf,FILE* fsource){
 		 			 printf("%c",isprint(buf[i])?buf[i]:'.');
 		        else
 		        	printf(" ");
-	 
+
 		}
 		printf("\n");
 	}
-}	
+}
 
 
 void afficher_table_section(Elf32_info elf){
@@ -401,14 +403,14 @@ void afficher_header(Elf32_info elf){
 	for(i=EI_MAG1;i<=EI_MAG3;i++){
 		printf("%c",elf.header.e_ident[i]);
 	}
-	switch(elf.header.e_ident[EI_CLASS]){				
+	switch(elf.header.e_ident[EI_CLASS]){
 		case ELFCLASSNONE:printf("classe invalide\n");break;
 		case ELFCLASS32:printf("32-BIT\n");break;
 		case ELFCLASS64:printf("64-BIT\n");break;
 		case ELFCLASSNUM:printf("NUM\n");break;
 	}
 	printf("\tDonnées:\t\t");							//data
-	switch(elf.header.e_ident[EI_DATA]){				
+	switch(elf.header.e_ident[EI_DATA]){
 		case 0:printf("données codées invalides\n");break;
 		case 1:printf("little endian\n");break;
 		case 2:printf("big endian\n");break;
@@ -459,37 +461,370 @@ void afficher_header(Elf32_info elf){
 	printf("\tTaille de l'en-tête de section:\t\t%d (octets)\n",elf.header.e_shentsize);
 	printf("\tNombre d'en-tête de section:\t\t%d\n",elf.header.e_shnum);
 	printf("\tTable d'indexes des chaînes d'en-tête de section: %d\n",elf.header.e_shstrndx);
+
+}
+
+
+int funForFindIndex(Elf32_info elfo,Elf32_info elft,int ind1){
+	for (int i = 0; i < elft.header.e_shnum; i++) {
+		char *name1=elfo.strtable+elfo.section[ind1].sh_name;
+		char *name2=elft.strtable+elft.section[i].sh_name;
+		if(strcmp(name1,name2)==0){
+			return i;
+		}
+	}
+	return -1;
+}
+
+void p2(Elf32_info elfo,Elf32_info elft){
+	int ind;
+	int nbsect=0;
+	Elf32_Ehdr header;
+	unsigned char *strtable;
+	unsigned char **progbits;
+	Elf32_Shdr *section;
+	char *name=elfo.strtable+elfo.section[elfo.header.e_shstrndx].sh_name;
+	uint16_t e_shstrndx;
+	uint32_t e_shoff=0;
+	//############## don't need change or same #########################3
+	Elf32_Sym  *symtab=elfo.symtab;
+	memcpy(header.e_ident,elfo.header.e_ident,sizeof(elfo.header.e_ident));
+	header.e_type=elfo.header.e_type;
+	header.e_machine=elfo.header.e_machine;
+	header.e_version=elfo.header.e_version;
+	header.e_entry=elfo.header.e_entry;
+	header.e_phoff=elfo.header.e_phoff;
+	header.e_flags=elfo.header.e_flags;
+	header.e_ehsize=elfo.header.e_ehsize;
+	header.e_phentsize=elfo.header.e_phentsize;
+	header.e_shentsize=elfo.header.e_shentsize;
+	//##############################################################
+
+	for (int i = 0; i < elfo.header.e_shnum; i++)
+		if((elfo.section[i].sh_type==SHT_STRTAB)||(elfo.section[i].sh_type==SHT_ARM_ATTRIBUTES)||(elfo.section[i].sh_type==SHT_PROGBITS)||(elfo.section[i].sh_type==SHT_NULL)||(elfo.section[i].sh_type==SHT_REL))nbsect++;
+	for (int i = 0; i < elft.header.e_shnum; i++){
+		char *name1=elft.strtable+elft.section[i].sh_name;
+		if((elft.section[i].sh_type==SHT_STRTAB)||(elft.section[i].sh_type==SHT_ARM_ATTRIBUTES)||(elft.section[i].sh_type==SHT_PROGBITS)||(elft.section[i].sh_type==SHT_NULL)||(elft.section[i].sh_type==SHT_REL)){
+			ind=funForFindIndex(elft,elfo,i);
+			if(ind==-1)printf("[%s]",name1);nbsect++;	
+		}
+	}
+	progbits=malloc((nbsect) * sizeof (unsigned char *));
+	section= malloc(nbsect*(sizeof(Elf32_Shdr)));
+	int a=0;
+	for (int i = 0; i < elfo.header.e_shnum; i++){
+		char *name1=elfo.strtable+elfo.section[i].sh_name;
+		ind=funForFindIndex(elfo,elft,i);
+		if((elfo.section[i].sh_type==SHT_PROGBITS)||(elfo.section[i].sh_type==SHT_NULL)||(elfo.section[i].sh_type==SHT_REL)){
+			if(ind!=-1){
+				progbits[a]=malloc((elfo.section[i].sh_size+elft.section[ind].sh_size)* sizeof(unsigned char));
+				e_shoff=e_shoff+elfo.section[i].sh_size+elft.section[ind].sh_size;
+				for(int k=0;k<elfo.section[i].sh_size;k++){
+					progbits[a][k]=elfo.progbits[i][k];
+				}
+				for(int k=0;k<elft.section[ind].sh_size;k++){
+					progbits[a][k+elfo.section[i].sh_size]=elft.progbits[ind][k];
+				}a++;
+			}else{
+				progbits[a]=malloc((elfo.section[i].sh_size) * sizeof(unsigned char));
+				e_shoff=e_shoff+elfo.section[i].sh_size;
+				for(int k=0;k<elfo.section[i].sh_size;k++){
+					progbits[a][k]=elfo.progbits[i][k];
+				}a++;
+			}
+		}
+	}
+	for (int i = 0; i < elft.header.e_shnum; i++){
+		char *name1=elft.strtable+elft.section[i].sh_name;
+		ind=funForFindIndex(elft,elfo,i);
+		if((elft.section[i].sh_type==SHT_PROGBITS)||(elft.section[i].sh_type==SHT_NULL)||(elft.section[i].sh_type==SHT_REL)){
+			if(ind==-1){
+				progbits[a]=malloc((elft.section[i].sh_size) * sizeof(unsigned char));
+				e_shoff=e_shoff+elft.section[i].sh_size;
+				for(int k=0;k<elft.section[i].sh_size;k++){
+					progbits[a][k]=elft.progbits[ind][k];
+				}a++;
+			}
+		} 
+	}
+	for (int i = 0; i < elfo.header.e_shnum; i++){
+		char *name1=elfo.strtable+elfo.section[i].sh_name;
+		ind=funForFindIndex(elfo,elft,i);
+		if((elfo.section[i].sh_type==SHT_STRTAB)||(elfo.section[i].sh_type==SHT_ARM_ATTRIBUTES)){
+			if(strcmp(name,name1)==0){e_shstrndx=a;}
+			if(ind!=-1){
+				progbits[a]=malloc((elfo.section[i].sh_size+elft.section[ind].sh_size)* sizeof(unsigned char));
+				e_shoff=e_shoff+elfo.section[i].sh_size+elft.section[ind].sh_size;
+				for(int k=0;k<elfo.section[i].sh_size;k++){
+					progbits[a][k]=elfo.progbits[i][k];
+				}
+				int index=1,skip=0,b=0,z;
+				while(index+skip<elft.section[ind].sh_size){
+					do{
+						for(int k=0;k<elfo.section[i].sh_size;k++){
+							z=index+skip;
+							while(elft.progbits[ind][z]!=0){
+								if(elfo.progbits[i][k+z-index-skip]==elft.progbits[ind][z]){b=1;}else{b=0;}
+								z++;	
+							}
+							if(b)break;
+						}
+						if(!b){
+							progbits[a][index+elfo.section[i].sh_size]=elft.progbits[ind][index+skip];
+						}
+						index++;
+					}while(elft.progbits[ind][index+skip]!=0);
+				}a++;
+			}else{
+				progbits[a]=malloc((elfo.section[i].sh_size) * sizeof(unsigned char));
+				e_shoff=e_shoff+elfo.section[i].sh_size;
+				for(int k=0;k<elfo.section[i].sh_size;k++){
+					progbits[a][k]=elfo.progbits[i][k];
+				}a++;
+			}
+		}
+	}
+	for (int i = 0; i < elfo.header.e_shnum; i++){
+		char *name1=elfo.strtable+elfo.section[i].sh_name;
+		ind=funForFindIndex(elfo,elft,i);
+		if((elft.section[i].sh_type==SHT_STRTAB)||(elft.section[i].sh_type==SHT_ARM_ATTRIBUTES)){
+			if(ind==-1){
+				progbits[a]=malloc((elft.section[i].sh_size) * sizeof(unsigned char));
+				e_shoff=e_shoff+elft.section[i].sh_size;
+				for(int k=0;k<elft.section[i].sh_size;k++){
+					progbits[a][k]=elft.progbits[i][k];
+				}a++;
+			}
+		}
+	}
+	header.e_shnum=elfo.header.e_shnum;
+	header.e_shstrndx=e_shstrndx;
+	header.e_shoff=e_shoff;
 	
 }
 
 
 
 
-
-
-
-
-
-
-
-
 //p2
-void p2e6(Elf32_info elfo,Elf32_info elft,FILE* f1,FILE* f2){
+void p2e6e8(Elf32_info elfo,Elf32_info elft){
+	int ind;
+	int nbsect=0;
+	unsigned char **progbits;
+	Elf32_Shdr *section;
 	for (int i = 0; i < elfo.header.e_shnum; i++){
-		for (int j = 0; j < elft.header.e_shnum; j++){
 			char *name1=elfo.strtable+elfo.section[i].sh_name;
-			char *name2=elft.strtable+elft.section[j].sh_name;
-			if(strcmp(name1,name2)==0){
-				if(elfo.section[i].sh_type==SHT_PROGBITS){
-					printf("[%d]",i);
-					for(int k=0;k<elfo.section[i].sh_size;k++){
-						printf("%02x",elfo.progbits[i][k]);
+			if((elfo.section[i].sh_type==SHT_PROGBITS)||(elfo.section[i].sh_type==SHT_NULL)||(elfo.section[i].sh_type==SHT_REL)){
+					ind=funForFindIndex(elfo,elft,i);
+					if(ind!=-1){
+						printf("[%s]",name1);nbsect++;
+						for(int k=0;k<elfo.section[i].sh_size;k++){
+							printf("%02x",elfo.progbits[i][k]);
 						if((k+1)%4==0)printf(" ");
 					}
+						for(int k=0;k<elft.section[ind].sh_size;k++){
+							printf("%02x",elft.progbits[ind][k]);
+							if((k+1)%4==0)printf(" ");
+						}
+						printf("\n");
+					}else{
+						printf("[%s]",name1);nbsect++;
+						for(int k=0;k<elfo.section[i].sh_size;k++){
+							printf("%02x",elfo.progbits[i][k]);
+							if((k+1)%4==0)printf(" ");
+						}
+						printf("\n");
+					}
+		}
+	}
+	for (int i = 0; i < elft.header.e_shnum; i++){
+			char *name1=elft.strtable+elft.section[i].sh_name;
+			if((elft.section[i].sh_type==SHT_PROGBITS)||(elft.section[i].sh_type==SHT_NULL)||(elft.section[i].sh_type==SHT_REL)){
+					ind=funForFindIndex(elft,elfo,i);
+					if(ind==-1){
+							printf("[%s]",name1);nbsect++;
+							for(int k=0;k<elft.section[i].sh_size;k++){
+								printf("%02x",elft.progbits[i][k]);
+								if((k+1)%4==0)printf(" ");
+							}
+							printf("\n");
+					}
+		}
+	}
+	progbits=malloc((nbsect) * sizeof (unsigned char *));
+	section= malloc(nbsect*(sizeof(Elf32_Shdr)));
+	int a=0;
+	for (int i = 0; i < elfo.header.e_shnum; i++){
+			char *name1=elfo.strtable+elfo.section[i].sh_name;
+			if((elfo.section[i].sh_type==SHT_PROGBITS)||(elfo.section[i].sh_type==SHT_NULL)||(elfo.section[i].sh_type==SHT_REL)){
+					ind=funForFindIndex(elfo,elft,i);
+					if(ind!=-1){
+						progbits[a]=malloc((elfo.section[i].sh_size+elft.section[ind].sh_size)* sizeof(unsigned char));
+						for(int k=0;k<elfo.section[i].sh_size;k++){
+							progbits[a][k]=elfo.progbits[i][k];
+					}
+						for(int k=0;k<elft.section[ind].sh_size;k++){
+							progbits[a][k+elfo.section[i].sh_size]=elft.progbits[ind][k];
+						}
+						section[a].sh_name=elfo.section[i].sh_name;
+						section[a].sh_type=elfo.section[i].sh_type;
+						section[a].sh_flags=elfo.section[i].sh_flags;
+						section[a].sh_addr=elfo.section[i].sh_addr;
+						if(a==0)section[a].sh_offset=elfo.section[i].sh_offset;else section[a].sh_offset=section[a-1].sh_offset+section[a-1].sh_size;
+						section[a].sh_size=elfo.section[i].sh_size+elft.section[ind].sh_size;
+						section[a].sh_link=elfo.section[i].sh_link;
+						section[a].sh_info=elfo.section[i].sh_info;
+						section[a].sh_addralign=elfo.section[i].sh_addralign;
+						section[a].sh_entsize=elfo.section[i].sh_entsize;
+
+						a++;
+					}else{
+						progbits[a]=malloc((elfo.section[i].sh_size) * sizeof(unsigned char));
+						for(int k=0;k<elfo.section[i].sh_size;k++){
+							progbits[a][k]=elfo.progbits[i][k];
+						}
+						section[a].sh_name=elfo.section[i].sh_name;
+						section[a].sh_type=elfo.section[i].sh_type;
+						section[a].sh_flags=elfo.section[i].sh_flags;
+						section[a].sh_addr=elfo.section[i].sh_addr;
+						if(a==0)section[a].sh_offset=elfo.section[i].sh_offset;else section[a].sh_offset=section[a-1].sh_offset+section[a-1].sh_size;
+						section[a].sh_size=elfo.section[i].sh_size+elft.section[ind].sh_size;
+						section[a].sh_link=elfo.section[i].sh_link;
+						section[a].sh_info=elfo.section[i].sh_info;
+						section[a].sh_addralign=elfo.section[i].sh_addralign;
+						section[a].sh_entsize=elfo.section[i].sh_entsize;
+						a++;
+					}
+		}
+	}
+	for (int i = 0; i < elft.header.e_shnum; i++){
+			char *name1=elft.strtable+elft.section[i].sh_name;
+			if((elft.section[i].sh_type==SHT_PROGBITS)||(elft.section[i].sh_type==SHT_NULL)||(elft.section[i].sh_type==SHT_REL)){
+					ind=funForFindIndex(elft,elfo,i);
+					if(ind==-1){
+							progbits[a]=malloc((elft.section[i].sh_size) * sizeof(unsigned char));
+							for(int k=0;k<elft.section[i].sh_size;k++){
+								progbits[a][k]=elft.progbits[ind][k];
+							}
+							section[a].sh_name=elft.section[i].sh_name;
+							section[a].sh_type=elft.section[i].sh_type;
+							section[a].sh_flags=elft.section[i].sh_flags;
+							section[a].sh_addr=elft.section[i].sh_addr;
+							if(a==0)section[a].sh_offset=elfo.section[i].sh_offset;else section[a].sh_offset=section[a-1].sh_offset+section[a-1].sh_size;
+							section[a].sh_size=elft.section[i].sh_size+elft.section[ind].sh_size;
+							section[a].sh_link=elft.section[i].sh_link;
+							section[a].sh_info=elft.section[i].sh_info;
+							section[a].sh_addralign=elft.section[i].sh_addralign;
+							section[a].sh_entsize=elft.section[i].sh_entsize;
+							a++;
+					}
+		}
+	}
+}
+
+
+
+void p2e7(Elf32_info elfo,Elf32_info elft){
+	int ind;
+	int nbsect=0;
+	unsigned char **progbits;
+	Elf32_Shdr *section;
+	for (int i = 0; i < elfo.header.e_shnum; i++)
+		if((elfo.section[i].sh_type==SHT_STRTAB)||(elfo.section[i].sh_type==SHT_ARM_ATTRIBUTES))nbsect++;
+	for (int i = 0; i < elft.header.e_shnum; i++){
+		char *name1=elft.strtable+elft.section[i].sh_name;
+		if((elft.section[i].sh_type==SHT_STRTAB)||(elft.section[i].sh_type==SHT_ARM_ATTRIBUTES)){
+			ind=funForFindIndex(elft,elfo,i);
+			if(ind==-1)printf("[%s]",name1);nbsect++;	
+		}
+	}
+	progbits=malloc((nbsect) * sizeof (unsigned char *));
+	section= malloc(nbsect*(sizeof(Elf32_Shdr)));
+	int a=0;
+	for (int i = 0; i < elfo.header.e_shnum; i++){
+		char *name1=elfo.strtable+elfo.section[i].sh_name;
+		if((elfo.section[i].sh_type==SHT_STRTAB)||(elfo.section[i].sh_type==SHT_ARM_ATTRIBUTES)){
+			ind=funForFindIndex(elfo,elft,i);
+			printf("[%s]",name1);
+			if(ind!=-1){
+				progbits[a]=malloc((elfo.section[i].sh_size+elft.section[ind].sh_size)* sizeof(unsigned char));
+				for(int k=0;k<elfo.section[i].sh_size;k++){
+					progbits[a][k]=elfo.progbits[i][k];
+					printf("%c",isprint(elfo.progbits[i][k])?elfo.progbits[i][k]:'.');
 				}
+				int index=1,skip=0,b=0,z;
+				while(index+skip<elft.section[ind].sh_size){
+						do{
+							for(int k=0;k<elfo.section[i].sh_size;k++){
+								z=index+skip;
+								while(elft.progbits[ind][z]!=0){
+									if(elfo.progbits[i][k+z-index-skip]==elft.progbits[ind][z]){b=1;}else{b=0;}
+									z++;	
+								}
+								if(b)break;
+							}
+							if(!b){
+								progbits[a][index+elfo.section[i].sh_size]=elft.progbits[ind][index+skip];
+								printf("%c",isprint(elft.progbits[ind][index+skip])?elft.progbits[ind][index+skip]:'.');
+							}
+							index++;
+					}while(elft.progbits[ind][index+skip]!=0);
+
+				}
+				printf("\n");
+				section[a].sh_name=elfo.section[i].sh_name;
+				section[a].sh_type=elfo.section[i].sh_type;
+				section[a].sh_flags=elfo.section[i].sh_flags;
+				section[a].sh_addr=elfo.section[i].sh_addr;
+				section[a].sh_size=elfo.section[i].sh_size+elft.section[ind].sh_size;
+				section[a].sh_link=elfo.section[i].sh_link;
+				section[a].sh_info=elfo.section[i].sh_info;
+				section[a].sh_addralign=elfo.section[i].sh_addralign;
+				section[a].sh_entsize=elfo.section[i].sh_entsize;
+				a++;
+			}else{
+				progbits[a]=malloc((elfo.section[i].sh_size) * sizeof(unsigned char));
+				for(int k=0;k<elfo.section[i].sh_size;k++){
+					progbits[a][k]=elfo.progbits[i][k];
+					printf("%c",isprint(elfo.progbits[i][k])?elfo.progbits[i][k]:'.');
+				}
+				printf("\n");
+				section[a].sh_name=elfo.section[i].sh_name;
+				section[a].sh_type=elfo.section[i].sh_type;
+				section[a].sh_flags=elfo.section[i].sh_flags;
+				section[a].sh_addr=elfo.section[i].sh_addr;
+				section[a].sh_size=elfo.section[i].sh_size+elft.section[ind].sh_size;
+				section[a].sh_link=elfo.section[i].sh_link;
+				section[a].sh_info=elfo.section[i].sh_info;
+				section[a].sh_addralign=elfo.section[i].sh_addralign;
+				section[a].sh_entsize=elfo.section[i].sh_entsize;
+				a++;
 			}
 		}
-		printf("\n");
+	}
+	for (int i = 0; i < elft.header.e_shnum; i++){
+		char *name1=elft.strtable+elft.section[i].sh_name;
+		if((elft.section[i].sh_type==SHT_STRTAB)||(elft.section[i].sh_type==SHT_ARM_ATTRIBUTES)){
+			ind=funForFindIndex(elft,elfo,i);
+				if(ind==-1){
+					printf("[%s]",name1);
+					progbits[a]=malloc((elft.section[i].sh_size) * sizeof(unsigned char));
+					for(int k=0;k<elft.section[i].sh_size;k++){
+						progbits[a][k]=elft.progbits[i][k];
+						printf("%c",isprint(elft.progbits[i][k])?elft.progbits[i][k]:'.');
+					}
+					section[a].sh_name=elft.section[i].sh_name;
+					section[a].sh_type=elft.section[i].sh_type;
+					section[a].sh_flags=elft.section[i].sh_flags;
+					section[a].sh_addr=elft.section[i].sh_addr;
+					section[a].sh_size=elft.section[i].sh_size+elft.section[ind].sh_size;
+					section[a].sh_link=elft.section[i].sh_link;
+					section[a].sh_info=elft.section[i].sh_info;
+					section[a].sh_addralign=elft.section[i].sh_addralign;
+					section[a].sh_entsize=elft.section[i].sh_entsize;
+					a++;
+			}
+		}
 	}
 }
 
@@ -497,7 +832,48 @@ void p2e6(Elf32_info elfo,Elf32_info elft,FILE* f1,FILE* f2){
 
 
 
+/*
 
+
+
+
+	
+
+
+
+
+
+
+	int ind;
+	int symtabmalloc=0;
+	Elf32_Sym  *symtab;
+	unsigned char **symtable;
+	for(int i=0 ; i<elfo.header.e_shnum;i++){
+		if(elfo.section[i].sh_type==SHT_SYMTAB){
+				ind=funForFindIndex(elfo,elft,i);
+				if(ind!=-1){
+					char *name1=elfo.strtable+elfo.section[i].sh_name;
+					printf("[%s]\n",name1);printf("%s\n",(char*)elfo.symtable[13]+elfo.symtab[4].st_name);
+					symtabmalloc++;
+				}else {
+					char *name1=elfo.strtable+elfo.section[i].sh_name;
+					printf("[%s]\n",name1);
+					symtabmalloc++;
+				}
+			}
+	}
+	for (int i = 0; i< elft.header.e_shnum;i++){
+		if(elft.section[i].sh_type==SHT_STRTAB){
+			ind=funForFindIndex(elft,elfo,i);
+			if(ind==-1){
+				char *name1=elft.strtable+elft.section[i].sh_name;
+				printf("[%s]\n",name1);
+				symtabmalloc++;
+			}
+		}
+	}
+	symtab=malloc(sizeof(Elf32_Sym)*symtabmalloc);
+}*/
 
 
 
@@ -533,13 +909,14 @@ void setup_little_endian(Elf32_info *elf){
 	elf->header.e_shstrndx = swap_uint16(elf->header.e_shstrndx);
 }
 //! Byte swap unsigned short
-uint16_t swap_uint16( uint16_t val ) 
+uint16_t swap_uint16( uint16_t val )
 {
     return (val << 8) | (val >> 8 );
 }
 
+
 //! Byte swap short
-int16_t swap_int16( int16_t val ) 
+int16_t swap_int16( int16_t val )
 {
     return (val << 8) | ((val >> 8) & 0xFF);
 }
@@ -547,14 +924,13 @@ int16_t swap_int16( int16_t val )
 //! Byte swap unsigned int
 uint32_t swap_uint32( uint32_t val )
 {
-    val = ((val << 8) & 0xFF00FF00 ) | ((val >> 8) & 0xFF00FF ); 
+    val = ((val << 8) & 0xFF00FF00 ) | ((val >> 8) & 0xFF00FF );
     return (val << 16) | (val >> 16);
 }
 
 //! Byte swap int
 int32_t swap_int32( int32_t val )
 {
-    val = ((val << 8) & 0xFF00FF00) | ((val >> 8) & 0xFF00FF ); 
+    val = ((val << 8) & 0xFF00FF00) | ((val >> 8) & 0xFF00FF );
     return (val << 16) | ((val >> 16) & 0xFFFF);
 }
-
